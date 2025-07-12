@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+
+.bg-black-custom {
+  background-color: #000;
+  color: white;
+}
+
+.button-custom {
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #0e0e0e;
+  color: white;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.button-custom:hover {
+  background-color: #111111;
+  transform: scale(1.05);
+}
