@@ -1,6 +1,6 @@
 import Sidebar from "../components/Sidebar";
-import { Outlet } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { Outlet } from "react-router-dom";
 import { useState } from "react";
 
 function DashboardLayout() {
@@ -10,7 +10,7 @@ function DashboardLayout() {
       <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col">
         <Navbar setSidebarOpen={setSidebarOpen} />
-        <main className="flex-1 p-6 h-fit sm:overflow-auto ">
+        <main className="flex-1 p-6 h-fit sm:overflow-auto">
           <Outlet />
         </main>
       </div>

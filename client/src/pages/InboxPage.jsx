@@ -1,10 +1,11 @@
 import { Mail, Clock, User, Archive, Heart, MessageCircle } from "lucide-react";
-import { mails } from "../../../index.js";
+import { mails } from "../../index.js";
 import { Link } from "react-router-dom";
-import MailToolbar from "../../components/MailToolbar.jsx";
+import MailToolbar from "../components/MailToolbar.jsx";
 import { useState } from "react";
+import usePageTitle from "../components/usePageTitle.js";
 
-export default function AllMailsPage() {
+export default function InboxPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedMails, setSelectedMails] = useState(new Set());
 
@@ -18,14 +19,16 @@ export default function AllMailsPage() {
     setSelectedMails(newSelected);
   };
 
+  usePageTitle('inbox')
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">All Mails</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
           <p className="text-gray-600 text-sm">
-            You have {mails.length} total messages
+            You have {mails.length} conversations
           </p>
         </div>
         <div className="flex gap-3">
@@ -45,9 +48,8 @@ export default function AllMailsPage() {
         {mails.map((mail, index) => (
           <div
             key={mail.id}
-            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${
-              selectedMails.has(mail.id) ? "border-violet-400 bg-violet-50" : ""
-            }`}
+            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${selectedMails.has(mail.id) ? "border-violet-400 bg-violet-50" : ""
+              }`}
           >
             {/* Selection Indicator */}
             {selectedMails.has(mail.id) && (
@@ -77,13 +79,13 @@ export default function AllMailsPage() {
                   </div>
                 </div>
 
-                <Link to={`/all-mails/detail/${mail.id}`}>
+                <Link to={`/inbox/detail/${mail.id}`}>
                   <h4 className="text-gray-800 font-medium mb-2 hover:text-violet-600 transition-colors">
                     {mail.subject}
                   </h4>
                   <p className="text-gray-600 text-sm line-clamp-2">
                     {mail.preview ||
-                      "No preview available. This message may be empty."}
+                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
                   </p>
                 </Link>
 
@@ -92,11 +94,10 @@ export default function AllMailsPage() {
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => toggleSelect(mail.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        selectedMails.has(mail.id)
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedMails.has(mail.id)
                           ? "bg-violet-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       <MessageCircle className="w-4 h-4" />
                       {selectedMails.has(mail.id) ? "Selected" : "Select"}

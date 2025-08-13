@@ -1,7 +1,8 @@
 import { Archive, Clock, User, Inbox, Heart, MessageCircle, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../../components/MailToolbar.jsx";
+import MailToolbar from "../components/MailToolbar.jsx";
 import { useState } from "react";
+import usePageTitle from "../components/usePageTitle.js";
 
 // Mock archived emails data
 const archivedMails = [
@@ -71,6 +72,8 @@ export default function ArchivePage() {
       default: return 'bg-gray-100 text-gray-700';
     }
   };
+  usePageTitle("archive");
+
 
   return (
     <div className="space-y-6">
@@ -94,15 +97,14 @@ export default function ArchivePage() {
       </div>
 
       <MailToolbar onRefresh={() => setRefreshKey((prev) => prev + 1)} />
-      
+
       {/* Mail Cards */}
       <div key={refreshKey} className="space-y-4">
         {archivedMails.map((mail) => (
-          <div 
+          <div
             key={mail.id}
-            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${
-              selectedMails.has(mail.id) ? 'border-violet-400 bg-violet-50' : ''
-            }`}
+            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${selectedMails.has(mail.id) ? 'border-violet-400 bg-violet-50' : ''
+              }`}
           >
             {/* Selection Indicator */}
             {selectedMails.has(mail.id) && (
@@ -142,18 +144,17 @@ export default function ArchivePage() {
                 {/* Actions */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-4">
-                    <button 
+                    <button
                       onClick={() => toggleSelect(mail.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        selectedMails.has(mail.id) 
-                          ? 'bg-violet-500 text-white' 
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedMails.has(mail.id)
+                          ? 'bg-violet-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <MessageCircle className="w-4 h-4" />
                       {selectedMails.has(mail.id) ? 'Selected' : 'Select'}
                     </button>
-                    <button 
+                    <button
                       onClick={() => restoreFromArchive(mail.id)}
                       className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                     >

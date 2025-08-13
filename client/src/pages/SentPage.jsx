@@ -1,40 +1,50 @@
-import { Star, Clock, User, Archive, Heart, MessageCircle, StarOff } from "lucide-react";
+import { Send, Clock, User, Archive, Heart, MessageCircle, Reply, Forward } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../../components/MailToolbar.jsx";
+import MailToolbar from "../components/MailToolbar.jsx";
 import { useState } from "react";
+import usePageTitle from "../components/usePageTitle.js";
 
-// Mock starred emails data
-const starredMails = [
+// Mock sent emails data
+const sentMails = [
   {
     id: 1,
-    from: "Sarah Johnson",
-    subject: "Important: Q4 Budget Review Meeting",
-    preview: "Please review the attached budget documents before our meeting tomorrow at 2 PM.",
-    date: "2 hours ago",
-    size: "2.3 MB",
-    priority: "high"
+    to: "team@company.com",
+    subject: "Weekly Team Update - Project Progress",
+    preview: "Hi team, here's our weekly update on the current project status and upcoming milestones.",
+    date: "3 hours ago",
+    size: "1.2 MB",
+    status: "delivered"
   },
   {
     id: 2,
-    from: "Marketing Team",
-    subject: "New Campaign Launch Strategy",
-    preview: "The new product launch campaign is ready for review. Please check the creative assets.",
+    to: "client@example.com",
+    subject: "Proposal for New Marketing Campaign",
+    preview: "Thank you for your interest in our services. Please find attached our detailed proposal.",
     date: "1 day ago",
-    size: "5.1 MB",
-    priority: "medium"
+    size: "3.4 MB",
+    status: "read"
   },
   {
     id: 3,
-    from: "John Smith",
-    subject: "Project Milestone Achieved",
-    preview: "Great news! We've successfully completed the first phase of the project ahead of schedule.",
-    date: "3 days ago",
-    size: "892 KB",
-    priority: "low"
+    to: "hr@company.com",
+    subject: "Leave Application - Next Week",
+    preview: "I would like to request leave for next week from Monday to Wednesday for personal reasons.",
+    date: "2 days ago",
+    size: "245 KB",
+    status: "delivered"
+  },
+  {
+    id: 4,
+    to: "support@vendor.com",
+    subject: "Technical Issue with Recent Order",
+    preview: "We are experiencing some technical difficulties with our recent order. Could you please assist?",
+    date: "5 days ago",
+    size: "678 KB",
+    status: "pending"
   }
 ];
 
-export default function StarredPage() {
+export default function SentPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedMails, setSelectedMails] = useState(new Set());
 
@@ -48,19 +58,16 @@ export default function StarredPage() {
     setSelectedMails(newSelected);
   };
 
-  const removeFromStarred = (mailId) => {
-    // In a real app, this would update the backend
-    console.log(`Removing mail ${mailId} from starred`);
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-700';
-      case 'medium': return 'bg-yellow-100 text-yellow-700';
-      case 'low': return 'bg-green-100 text-green-700';
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'delivered': return 'bg-green-100 text-green-700';
+      case 'read': return 'bg-blue-100 text-blue-700';
+      case 'pending': return 'bg-yellow-100 text-yellow-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
+
+  usePageTitle('sent')
 
   return (
     <div className="space-y-6">
@@ -68,14 +75,14 @@ export default function StarredPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Star className="w-6 h-6 text-yellow-500 fill-current" />
-            Starred
+            <Send className="w-6 h-6 text-blue-500" />
+            Sent
           </h1>
-          <p className="text-gray-600 text-sm">You have {starredMails.length} starred conversations</p>
+          <p className="text-gray-600 text-sm">You have sent {sentMails.length} emails</p>
         </div>
         <div className="flex gap-3">
           <button className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm">
-            Unstar all
+            Export
           </button>
           <button className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm">
             Filter
@@ -84,15 +91,14 @@ export default function StarredPage() {
       </div>
 
       <MailToolbar onRefresh={() => setRefreshKey((prev) => prev + 1)} />
-      
+
       {/* Mail Cards */}
       <div key={refreshKey} className="space-y-4">
-        {starredMails.map((mail) => (
-          <div 
+        {sentMails.map((mail) => (
+          <div
             key={mail.id}
-            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${
-              selectedMails.has(mail.id) ? 'border-violet-400 bg-violet-50' : ''
-            }`}
+            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${selectedMails.has(mail.id) ? 'border-violet-400 bg-violet-50' : ''
+              }`}
           >
             {/* Selection Indicator */}
             {selectedMails.has(mail.id) && (
@@ -101,17 +107,17 @@ export default function StarredPage() {
 
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                {mail.from.charAt(0).toUpperCase()}
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+                <Send className="w-6 h-6" />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-gray-900 truncate">{mail.from}</h3>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(mail.priority)}`}>
-                      {mail.priority} priority
+                    <h3 className="font-semibold text-gray-900 truncate">To: {mail.to}</h3>
+                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(mail.status)}`}>
+                      {mail.status}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-500 text-sm">
@@ -120,7 +126,7 @@ export default function StarredPage() {
                   </div>
                 </div>
 
-                <Link to={`/starred/detail/${mail.id}`}>
+                <Link to={`/sent/detail/${mail.id}`}>
                   <h4 className="text-gray-800 font-medium mb-2 hover:text-violet-600 transition-colors">
                     {mail.subject}
                   </h4>
@@ -132,27 +138,23 @@ export default function StarredPage() {
                 {/* Actions */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-4">
-                    <button 
+                    <button
                       onClick={() => toggleSelect(mail.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        selectedMails.has(mail.id) 
-                          ? 'bg-violet-500 text-white' 
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedMails.has(mail.id)
+                          ? 'bg-violet-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       <MessageCircle className="w-4 h-4" />
                       {selectedMails.has(mail.id) ? 'Selected' : 'Select'}
                     </button>
-                    <button 
-                      onClick={() => removeFromStarred(mail.id)}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
-                    >
-                      <StarOff className="w-4 h-4" />
-                      Unstar
+                    <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
+                      <Reply className="w-4 h-4" />
+                      Reply
                     </button>
                     <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                      <Archive className="w-4 h-4" />
-                      Archive
+                      <Forward className="w-4 h-4" />
+                      Forward
                     </button>
                   </div>
                   <div className="text-xs text-gray-400">

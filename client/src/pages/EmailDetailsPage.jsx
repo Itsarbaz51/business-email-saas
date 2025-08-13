@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import usePageTitle from "../components/usePageTitle";
+import { useSelector } from "react-redux";
 
 // Mock email data
 const mockEmail = {
@@ -102,6 +104,7 @@ export default function EmailDetailsPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [showFullHeaders, setShowFullHeaders] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
+  const { role } = useSelector((state) => state?.auth?.user)
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -157,6 +160,9 @@ export default function EmailDetailsPage() {
     return "bg-gray-50 text-gray-700 border-gray-200";
   };
 
+  usePageTitle("email-view");
+
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
@@ -166,7 +172,7 @@ export default function EmailDetailsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex-1">
             <Link
-              to="/inbox"
+              to={`/${role}/dashboard`}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-2"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -184,11 +190,10 @@ export default function EmailDetailsPage() {
           <div className="hidden  sm:flex items-center gap-3">
             <button
               onClick={toggleRead}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${
-                email.isRead
-                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  : "bg-violet-600 text-white hover:bg-violet-700"
-              }`}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${email.isRead
+                ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                : "bg-violet-600 text-white hover:bg-violet-700"
+                }`}
             >
               {email.isRead ? "Mark as Unread" : "Mark as Read"}
             </button>
@@ -262,16 +267,14 @@ export default function EmailDetailsPage() {
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={toggleStar}
-                      className={`p-2 rounded-lg transition-colors ${
-                        email.isStarred
-                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${email.isStarred
+                        ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                        }`}
                     >
                       <Star
-                        className={`w-4 h-4 ${
-                          email.isStarred ? "fill-current" : ""
-                        }`}
+                        className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""
+                          }`}
                       />
                     </button>
                     <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm">
@@ -468,11 +471,10 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${
-                  email.isLiked
-                    ? "bg-red-50 text-red-700 border-red-200"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${email.isLiked
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -503,11 +505,10 @@ export default function EmailDetailsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleLike}
-                className={`p-2 rounded-lg transition-colors ${
-                  email.isLiked
-                    ? "bg-red-100 text-red-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                className={`p-2 rounded-lg transition-colors ${email.isLiked
+                  ? "bg-red-100 text-red-600"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -515,11 +516,10 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleStar}
-                className={`p-2 rounded-lg transition-colors ${
-                  email.isStarred
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                className={`p-2 rounded-lg transition-colors ${email.isStarred
+                  ? "bg-yellow-100 text-yellow-600"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
               >
                 <Star
                   className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""}`}

@@ -1,7 +1,8 @@
 import { Trash2, Clock, User, RotateCcw, MessageCircle, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../../components/MailToolbar.jsx";
+import MailToolbar from "../components/MailToolbar.jsx";
 import { useState } from "react";
+import usePageTitle from "../components/usePageTitle.js";
 
 // Mock trash emails data
 const trashedMails = [
@@ -66,6 +67,8 @@ export default function TrashPage() {
     console.log("Emptying trash");
   };
 
+  usePageTitle('trash')
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -102,9 +105,8 @@ export default function TrashPage() {
         {trashedMails.map((mail) => (
           <div
             key={mail.id}
-            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-red-300 transition-all duration-300 hover:shadow-lg hover:shadow-red-100 ${
-              selectedMails.has(mail.id) ? "border-red-400 bg-red-50" : ""
-            }`}
+            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-red-300 transition-all duration-300 hover:shadow-lg hover:shadow-red-100 ${selectedMails.has(mail.id) ? "border-red-400 bg-red-50" : ""
+              }`}
           >
             {/* Selection Indicator */}
             {selectedMails.has(mail.id) && (
@@ -146,11 +148,10 @@ export default function TrashPage() {
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => toggleSelect(mail.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                        selectedMails.has(mail.id)
-                          ? "bg-red-100 text-red-700 border border-red-200"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${selectedMails.has(mail.id)
+                        ? "bg-red-100 text-red-700 border border-red-200"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
                     >
                       <User className="w-4 h-4" />
                       {selectedMails.has(mail.id) ? "Selected" : "Select"}

@@ -1,31 +1,33 @@
 import { Mail, Clock, User, Archive, Heart, MessageCircle } from "lucide-react";
-import { mails } from "../../../index.js";
+import { mails } from "../../index.js";
 import { Link } from "react-router-dom";
-import MailToolbar from "../../components/MailToolbar.jsx";
+import MailToolbar from "../components/MailToolbar.jsx";
 import { useState } from "react";
+import usePageTitle from "../components/usePageTitle.js";
+import { useSelector } from "react-redux";
 
-export default function InboxPage() {
+export default function AllMailsPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedMails, setSelectedMails] = useState(new Set());
+  const { role } = useSelector((state) => state?.auth?.user)
+
 
   const toggleSelect = (mailId) => {
     const newSelected = new Set(selectedMails);
-    if (newSelected.has(mailId)) {
-      newSelected.delete(mailId);
-    } else {
-      newSelected.add(mailId);
-    }
+    newSelected.has(mailId) ? newSelected.delete(mailId) : newSelected.add(mailId);
     setSelectedMails(newSelected);
   };
+
+  usePageTitle("All Mails");
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inbox</h1>
+          <h1 className="text-2xl font-bold text-gray-900">All Mails</h1>
           <p className="text-gray-600 text-sm">
-            You have {mails.length} conversations
+            You have {mails.length} total messages
           </p>
         </div>
         <div className="flex gap-3">
@@ -38,26 +40,26 @@ export default function InboxPage() {
         </div>
       </div>
 
+      {/* Toolbar */}
       <MailToolbar onRefresh={() => setRefreshKey((prev) => prev + 1)} />
 
       {/* Mail Cards */}
-      <div key={refreshKey} className="space-y-4">
+      <div className="space-y-4">
         {mails.map((mail, index) => (
           <div
             key={mail.id}
-            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${
-              selectedMails.has(mail.id) ? "border-violet-400 bg-violet-50" : ""
-            }`}
+            className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${selectedMails.has(mail.id) ? "border-violet-400 bg-violet-50" : ""
+              }`}
           >
             {/* Selection Indicator */}
             {selectedMails.has(mail.id) && (
-              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-12 bg-violet-500 rounded-full"></div>
+              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-1 h-12 bg-violet-500 rounded-full" />
             )}
 
             <div className="flex items-start gap-4">
               {/* Avatar */}
               <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-                {mail.from.charAt(0).toUpperCase()}
+                {mail.from?.charAt(0).toUpperCase()}
               </div>
 
               {/* Content */}
@@ -77,26 +79,25 @@ export default function InboxPage() {
                   </div>
                 </div>
 
-                <Link to={`/inbox/detail/${mail.id}`}>
+                {/* Subject + Preview Link */}
+                <Link to={`/${role}/detail/${mail.id}`}>
                   <h4 className="text-gray-800 font-medium mb-2 hover:text-violet-600 transition-colors">
-                    {mail.subject}
+                    {mail.subject || "No Subject"}
                   </h4>
                   <p className="text-gray-600 text-sm line-clamp-2">
-                    {mail.preview ||
-                      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."}
+                    {mail.preview || "No preview available. This message may be empty."}
                   </p>
                 </Link>
 
-                {/* Actions */}
+                {/* Action Buttons */}
                 <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => toggleSelect(mail.id)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        selectedMails.has(mail.id)
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${selectedMails.has(mail.id)
                           ? "bg-violet-500 text-white"
                           : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                        }`}
                     >
                       <MessageCircle className="w-4 h-4" />
                       {selectedMails.has(mail.id) ? "Selected" : "Select"}
