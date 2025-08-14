@@ -37,7 +37,7 @@ import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import RequireRole from "../components/auth/RequireRole.jsx";
 import Register from "../pages/Register.jsx";
-import LoginPage from "../pages/login.jsx";
+import LoginPage from "../pages/Login.jsx";
 
 const getMailRoutes = () => (
   <>
