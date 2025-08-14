@@ -5,7 +5,7 @@ import InputField from "../components/ui/InputField";
 import ButtonField from "../components/ui/ButtonField";
 import { login } from "../redux/slices/authSlice";
 
-export default function LoginPage() {
+export default function Login() {
   const [formData, setFormData] = useState({
     emailOrPhone: "",
     password: "",

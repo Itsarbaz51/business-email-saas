@@ -37,7 +37,7 @@ import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import RequireRole from "../components/auth/RequireRole.jsx";
 import Register from "../pages/Register.jsx";
-import LoginPage from "../pages/Login.jsx";
+import Login from "../pages/Login.jsx";
 
 const getMailRoutes = () => (
   <>
@@ -57,7 +57,7 @@ export const router = createBrowserRouter(
       {/* 🌐 Public Landing Page */}
       <Route path="/" element={<RendererPageLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="login" element={<LoginPage />} />
+        <Route path="login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
 
