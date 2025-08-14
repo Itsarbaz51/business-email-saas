@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { Mail, Menu, X } from "lucide-react";
 import { redirect, useLocation, useNavigate } from "react-router-dom";
-import LoginPage from "../pages/login.jsx";
 
 const RendererNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // const {    } = useSelector((state) => state.auth?.user)
-  const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
 
   const currentLocation = useLocation().pathname;
@@ -70,28 +68,12 @@ const RendererNavbar = () => {
             <div className="hidden md:flex items-center space-x-4">
               <div>
                 <button
-                  onClick={() => setShowLogin(true)}
                   className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
                 >
                   Sign In
                 </button>
 
-                {showLogin && (
-                  <div
-                    className="fixed inset-0 bg-blackbg-opacity-40 flex items-center justify-center z-10 bg-red-400 p-8 "
-                    onClick={() => setShowLogin(false)}
-                  >
-                    <div className="bg-black/10 rounded-2xl shadow-lg p-8 relative max-w-lg w-full">
-                      <button
-                        onClick={() => setShowLogin(false)}
-                        className="absolute top-2 right-2 text-gray-500 hover:text-red-500 m-2"
-                      >
-                        ✕
-                      </button>
-                      <LoginPage />
-                    </div>
-                  </div>
-                )}
+            
               </div>
               <button
                 onClick={() => redirect("register")}
