@@ -19,11 +19,12 @@ import {
   User,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getCurrentUser } from "../redux/slices/authSlice";
 
 /* ─── Helper: choose correct path per role ───────────────────────── */
-const getPath = (item, role) =>
-  item.pathFor ? item.pathFor[role] : item.path;
+const getPath = (item, role) => (item.pathFor ? item.pathFor[role] : item.path);
 
 /* ─── Nav items ──────────────────────────────────────────────────── */
 const navItems = [
@@ -160,6 +161,11 @@ const navItems = [
 
 /* ─── Sidebar component ─────────────────────────────────────────── */
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
   const role = useSelector((s) => s.auth.user?.role);
   const location = useLocation();
 
@@ -173,7 +179,9 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
 
   const superOnly =
     role === "superadmin"
-      ? visibleLinks.filter((i) => i.roles.length === 1 && i.roles[0] === "superadmin")
+      ? visibleLinks.filter(
+          (i) => i.roles.length === 1 && i.roles[0] === "superadmin"
+        )
       : [];
 
   const regular = visibleLinks.filter((i) => !superOnly.includes(i));
@@ -182,8 +190,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     role === "superadmin"
       ? "Super Administrator"
       : role === "admin"
-        ? "Administrator"
-        : "Labels";
+      ? "Administrator"
+      : "Labels";
 
   const labels = [
     { name: "Work", color: "bg-blue-500" },
@@ -271,7 +279,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           </div>
           <div className="space-y-2">
             {labels.map(({ name, color }) => (
-              <div key={name} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg">
+              <div
+                key={name}
+                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg"
+              >
                 <div className={`w-3 h-3 rounded-full ${color}`} />
                 <span className="text-sm text-gray-700">{name}</span>
               </div>
@@ -284,7 +295,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       {visibleLinks.some((i) => i.label === "Settings") && (
         <div className="p-4 border-t border-gray-200">
           <Link
-            to={getPath(navItems.find((i) => i.label === "Settings"), role)}
+            to={getPath(
+              navItems.find((i) => i.label === "Settings"),
+              role
+            )}
             className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
             onClick={() => setSidebarOpen(false)}
           >
@@ -317,10 +331,11 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
     <Link
       to={path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${active
+      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+        active
           ? "bg-violet-100 text-violet-700 border border-violet-200"
           : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+      }`}
     >
       <div className="flex items-center gap-3">
         {icon}
@@ -328,10 +343,11 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
       </div>
       {count !== undefined && (
         <span
-          className={`text-xs px-2 py-1 rounded-full ${active
+          className={`text-xs px-2 py-1 rounded-full ${
+            active
               ? "bg-violet-200 text-violet-800"
               : "bg-gray-100 text-gray-600"
-            }`}
+          }`}
         >
           {count}
         </span>

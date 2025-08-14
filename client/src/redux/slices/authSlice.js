@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const initialState = {
@@ -42,31 +43,69 @@ export const { authRequest, authSuccess, authLoginSuccess, authFailure } =
   authSlice.actions;
 export default authSlice.reducer;
 
+// Set base URL and default axios config
 const baseURL = import.meta.env.VITE_BASE_URL;
+
+const axiosInstance = axios.create({
+  baseURL,
+  withCredentials: true,
+});
 
 // ================== Registration Action ==================
 export const register = (userData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
+    const { data } = await axiosInstance.post("/auth/signup", userData);
     dispatch(authSuccess(data));
     toast.success(data.message);
   } catch (error) {
-    const { data } = error.response;
-    dispatch(authFailure(data.message) || "API Connection Error");
-    toast.error(data.message);
+    const message =
+      error?.response?.data?.message || "API register Connection Error";
+    dispatch(authFailure(message));
+    toast.error(message);
   }
 };
 
+// ================== Login ==================
 export const login = (userData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/login`, userData);
+    const { data } = await axiosInstance.post("/auth/login", userData);
     dispatch(authLoginSuccess(data));
     toast.success(data.message);
   } catch (error) {
-    const { data } = error.response;
-    dispatch(authFailure(data.message) || "API Connection Error");
-    toast.error(data.message);
+    const message =
+      error?.response?.data?.message || "API login Connection Error";
+    dispatch(authFailure(message));
+    toast.error(message);
+  }
+};
+
+// ================== Get Current User ==================
+export const getCurrentUser = () => async (dispatch) => {
+  dispatch(authRequest());
+  try {
+    const { data } = await axiosInstance.get("/auth/get-current-user");
+    dispatch(authSuccess(data));
+    toast.success(data.message);
+  } catch (error) {
+    const message =
+      error?.response?.data?.message || "API getCurrentUser Connection Error";
+    dispatch(authFailure(message));
+    toast.error(message);
+  }
+};
+
+// ================== Logout ==================
+export const logout = () => async (dispatch) => {
+  dispatch(authRequest());
+  try {
+    const { data } = await axiosInstance.get("/auth/logout");
+    dispatch(authSuccess(data));
+    toast.success(data.message);
+  } catch (error) {
+    const message = error?.response?.data?.message || "API Connection Error";
+    dispatch(authFailure(message));
+    toast.error(message);
   }
 };

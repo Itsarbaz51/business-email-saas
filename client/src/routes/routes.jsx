@@ -6,38 +6,38 @@ import {
 } from "react-router-dom";
 
 // Layouts
-import DashboardLayout from "../layout/DashboardLayout";
-import RendererPageLayout from "../layout/RendererPageLayout";
+import DashboardLayout from "../layout/DashboardLayout.jsx";
+import RendererPageLayout from "../layout/RendererPageLayout.jsx";
 
 // Shared Pages
-import HomePage from "../pages/renderer/LandingPage";
-import InboxPage from "../pages/InboxPage";
-import SentPage from "../pages/SentPage";
-import StarredPage from "../pages/StarredPage";
-import ArchivePage from "../pages/ArchivePage";
-import TrashPage from "../pages/TrashPage";
-import AllMailsPage from "../pages/AllMailsPage";
-import EmailDetailsPage from "../pages/EmailDetailsPage";
+import HomePage from "../pages/renderer/LandingPage.jsx";
+import InboxPage from "../pages/InboxPage.jsx";
+import SentPage from "../pages/SentPage.jsx";
+import StarredPage from "../pages/StarredPage.jsx";
+import ArchivePage from "../pages/ArchivePage.jsx";
+import TrashPage from "../pages/TrashPage.jsx";
+import AllMailsPage from "../pages/AllMailsPage.jsx";
+import EmailDetailsPage from "../pages/EmailDetailsPage.jsx";
 
 // User Pages
-import UserProfile from "../pages/user/UserProfile";
+import UserProfile from "../pages/user/UserProfile.jsx";
 // Admin Pages
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import DomainsPage from "../pages/admin/DomainsPage";
-import UsersPage from "../pages/admin/UsersPage";
-import MailboxesPage from "../pages/admin/MailboxesPage";
-import BillingPage from "../pages/admin/BillingPage";
-import AdminSettingsPage from "../pages/admin/SettingsPage";
+import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
+import DomainsPage from "../pages/admin/DomainsPage.jsx";
+import UsersPage from "../pages/admin/UsersPage.jsx";
+import MailboxesPage from "../pages/admin/MailboxesPage.jsx";
+import BillingPage from "../pages/admin/BillingPage.jsx";
+import AdminSettingsPage from "../pages/admin/SettingsPage.jsx";
 
 // Super Admin Pages
-import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard";
-import SystemLogsPage from "../pages/superadmin/SystemLogsPage";
-import ToolsPage from "../pages/superadmin/ToolsPage";
+import SuperAdminDashboard from "../pages/superadmin/SuperAdminDashboard.jsx";
+import SystemLogsPage from "../pages/superadmin/SystemLogsPage.jsx";
+import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
 
-import NotFoundPage from "../pages/NotFoundPage";
-import RequireRole from "../components/auth/RequireRole";
-import LoginPage from "../pages/login";
-import Register from "../pages/Register";
+import NotFoundPage from "../pages/NotFoundPage.jsx";
+import RequireRole from "../components/auth/RequireRole.jsx";
+import LoginPage from "../pages/login.jsx";
+import Register from "../pages/Register.jsx";
 
 const getMailRoutes = () => (
   <>

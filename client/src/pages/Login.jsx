@@ -61,9 +61,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await dispatch(login(formData));
-      navigate("/dashboard");
     } finally {
       setLoading(false);
+      navigate("/admin/dashboard");
     }
   };
 
