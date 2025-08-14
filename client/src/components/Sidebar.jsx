@@ -21,7 +21,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getCurrentUser } from "../redux/slices/authSlice";
+import { getCurrentUser } from "../redux/slices/authSlice.js";
 
 /* ─── Helper: choose correct path per role ───────────────────────── */
 const getPath = (item, role) => (item.pathFor ? item.pathFor[role] : item.path);

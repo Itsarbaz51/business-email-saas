@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { Mail, Menu, X } from "lucide-react";
-import { useSelector } from "react-redux";
-import LoginPage from "../pages/login";
 import { redirect, useLocation, useNavigate } from "react-router-dom";
+import LoginPage from "../pages/login.jsx";
 
 const RendererNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
