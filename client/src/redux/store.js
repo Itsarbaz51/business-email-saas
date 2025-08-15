@@ -6,13 +6,13 @@ const store = configureStore({
     auth: authReducer,
     // Add other reducers here
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({
-      serializableCheck: {
-        ignoredActions: ["auth/loginSuccess"],
-        ignoredPaths: ["auth.user"],
-      },
-    }),
+  // middleware: (getDefaultMiddleware) =>
+  //   getDefaultMiddleware({
+  //     serializableCheck: {
+  //       ignoredActions: ["auth/loginSuccess"],
+  //       ignoredPaths: ["auth.user"],
+  //     },
+  //   }),
   // devTools: process.env.NODE_ENV !== "production",
 });
 
