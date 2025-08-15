@@ -9,9 +9,10 @@ export default function RequireRole({ roles }) {
     dispatch(getCurrentUser());
   }, [dispatch]);
 
-  const role = useSelector((state) => state.auth);
-  console.log(".user?.role", role);
+  const {data} = useSelector((state) => state.auth.data);
+  console.log(".user?.role", data);
 
+  const role = "admin"
   console.log("RequireRole - role:", role);
 
   if (role === undefined || role === null) {
