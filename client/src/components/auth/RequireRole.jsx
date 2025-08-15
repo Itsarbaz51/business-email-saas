@@ -5,18 +5,28 @@ import { getCurrentUser } from "../../redux/slices/authSlice";
 
 export default function RequireRole({ roles }) {
   const dispatch = useDispatch();
+
+  const { user, isLoading } = useSelector((state) => state.auth);
+
   useEffect(() => {
-    dispatch(getCurrentUser());
-  }, [dispatch]);
+    // Only fetch if we don't have a user yet
+    if (!user) {
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, user]);
 
-  const data = useSelector((state) => state.auth);
-  console.log(".user?.role", data);
+  const role = user?.role;
 
-  const role = "admin"
+  console.log(".user?.role", role);
   console.log("RequireRole - role:", role);
 
-  if (role === undefined || role === null) {
+  if (isLoading) {
     return <div>Loading...</div>;
+  }
+
+  if (!role) {
+    // Not logged in or role missing
+    return <Navigate to="/" replace />;
   }
 
   if (!roles.includes(role)) {
