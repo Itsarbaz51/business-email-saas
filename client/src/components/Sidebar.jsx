@@ -169,7 +169,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const { user } = useSelector((state) => state.auth);
   console.log(user);
 
-  const role = user.role;
+  const role = user?.role;
 
   const location = useLocation();
 

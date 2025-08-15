@@ -9,6 +9,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const initialState = {
   user: null,
+  currentUserData: null,
   isLoading: false,
   error: null,
   success: null,
@@ -47,7 +48,7 @@ const authSlice = createSlice({
     },
     authGetCurrentUser: (state, action) => {
       state.isLoading = false;
-      state.user = action.payload?.user || action.payload?.data?.user || null;
+      state.currentUserData = action.payload?.user || action.payload?.data?.user || null;
       state.error = null;
     },
   },
