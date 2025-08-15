@@ -1,8 +1,16 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getCurrentUser } from "../../redux/slices/authSlice";
 
 export default function RequireRole({ roles }) {
-  const role = useSelector((state) => state.auth.user?.role);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
+  const role = useSelector((state) => state.auth);
+  console.log(".user?.role", role);
 
   console.log("RequireRole - role:", role);
 
