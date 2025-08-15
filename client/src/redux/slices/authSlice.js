@@ -1,10 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+axios.defaults.withCredentials = true;
+
+const initialUser = JSON.parse(localStorage.getItem("user") || "null");
 
 const initialState = {
-  user: null,
+  user: initialUser,
   isLoading: false,
   error: null,
   success: null,
@@ -21,91 +25,116 @@ const authSlice = createSlice({
     },
     authSuccess: (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
+      const { user, message, showToast } = action.payload || {};
+
+      if (user) {
+        state.user = user;
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+
+      state.success = message || "Success";
       state.error = null;
-      state.success = action.payload.message;
+
+      if (showToast) {
+        toast.success(state.success);
+      }
     },
-    authLoginSuccess: (state, action) => {
-      state.isLoading = false;
-      state.user = action.payload.user;
-      state.error = null;
-      state.success = action.payload.message;
-    },
-    authFailure: (state, action) => {
+    authFail: (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      toast.error(action.payload);
+    },
+    logout: (state) => {
+      state.user = null;
+      state.isLoading = false;
       state.success = null;
+      state.error = null;
+      localStorage.removeItem("user");
+      toast.success("Logged Out Successfully.");
     },
   },
 });
 
-export const { authRequest, authSuccess, authLoginSuccess, authFailure } =
-  authSlice.actions;
+export const { authRequest, authSuccess, authFail, logout } = authSlice.actions;
 export default authSlice.reducer;
 
-// Set base URL and default axios config
-const baseURL = import.meta.env.VITE_BASE_URL;
+const handleError = (err) =>
+  err.response?.data?.message || err.message || "Something went wrong.";
 
-const axiosInstance = axios.create({
-  baseURL,
-  withCredentials: true,
-});
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-// ================== Registration Action ==================
-export const register = (userData) => async (dispatch) => {
+export const login = (credentials) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axiosInstance.post("/auth/signup", userData);
+    const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
+    console.log(data);
+    
     dispatch(authSuccess(data));
-    toast.success(data.message);
-  } catch (error) {
-    const message =
-      error?.response?.data?.message || "API register Connection Error";
-    dispatch(authFailure(message));
-    toast.error(message);
+  } catch (err) {
+    dispatch(authFail(handleError(err)));
   }
 };
 
-// ================== Login ==================
-export const login = (userData) => async (dispatch) => {
+export const updateAdmin = (updateData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axiosInstance.post("/auth/login", userData);
-    dispatch(authLoginSuccess(data));
-    toast.success(data.message);
+    const { data } = await axios.post(
+      `${baseURL}/auth/update-admin`,
+      updateData
+    );
+
+    dispatch(
+      authSuccess({
+        user: data.data.user,
+        message: "User updated successfully.",
+        showToast: true,
+      })
+    );
   } catch (error) {
-    const message =
-      error?.response?.data?.message || "API login Connection Error";
-    dispatch(authFailure(message));
-    toast.error(message);
+    dispatch(authFail(handleError(error)));
   }
 };
 
-// ================== Get Current User ==================
-export const getCurrentUser = () => async (dispatch) => {
-  dispatch(authRequest());
-  try {
-    const { data } = await axiosInstance.get("/auth/get-current-user");
-    dispatch(authSuccess(data));
-    toast.success(data.message);
-  } catch (error) {
-    const message =
-      error?.response?.data?.message || "API getCurrentUser Connection Error";
-    dispatch(authFailure(message));
-    toast.error(message);
-  }
+export const logoutUser = () => (dispatch) => {
+  dispatch(logout());
 };
 
-// ================== Logout ==================
-export const logout = () => async (dispatch) => {
+export const forgotPassword =
+  (email, otp = null, newPassword = null) =>
+  async (dispatch) => {
+    dispatch(authRequest());
+    try {
+      const body = { email };
+      let endpoint = "/forgot-password";
+      if (otp && newPassword) {
+        body.otp = otp;
+        body.newPassword = newPassword;
+      }
+      await axios.post(`${baseURL}/auth${endpoint}`, body);
+
+      dispatch(
+        authSuccess({
+          message: "Password recovery step completed.",
+          showToast: true,
+        })
+      );
+    } catch (err) {
+      dispatch(authFail(handleError(err)));
+    }
+  };
+
+export const resetPassword = (passwordFormData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axiosInstance.get("/auth/logout");
-    dispatch(authSuccess(data));
-    toast.success(data.message);
-  } catch (error) {
-    const message = error?.response?.data?.message || "API Connection Error";
-    dispatch(authFailure(message));
-    toast.error(message);
+    await axios.post(`${baseURL}/auth/reset-password`, passwordFormData);
+
+    dispatch(
+      authSuccess({
+        message: "Password reset successfully.",
+        showToast: true,
+      })
+    );
+  } catch (err) {
+    dispatch(authFail(handleError(err)));
   }
 };
