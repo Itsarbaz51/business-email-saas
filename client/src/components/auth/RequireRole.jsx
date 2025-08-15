@@ -7,6 +7,11 @@ export default function RequireRole({ roles }) {
   const dispatch = useDispatch();
 
   const { user, isLoading } = useSelector((state) => state.auth);
+  console.log(user);
+  console.log(user?.role);
+  console.log(roles);
+  
+  
 
   useEffect(() => {
     if (!user) {
