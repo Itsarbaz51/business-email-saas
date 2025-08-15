@@ -16,7 +16,7 @@ export default function RequireRole({ roles }) {
     }
   }, [dispatch, user]);
 
-  const role = user.role;
+  const role = user?.role;
 
   console.log(".user?.role", role);
   console.log("RequireRole - role:", role);
