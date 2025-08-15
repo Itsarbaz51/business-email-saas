@@ -66,6 +66,17 @@ export default authSlice.reducer;
 const handleError = (err) =>
   err.response?.data?.message || err.message || "Something went wrong.";
 
+// Register
+export const register = (userData) => async (dispatch) => {
+  dispatch(authRequest());
+  try {
+    const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
+    dispatch(authSuccess({ ...data, showToast: true }));
+  } catch (err) {
+    dispatch(authFail(handleError(err)));
+  }
+};
+
 // Login
 export const login = (credentials) => async (dispatch) => {
   dispatch(authRequest());
