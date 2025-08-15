@@ -66,7 +66,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 export const register = (userData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/sign-up`, userData, {
+    const { data } = await axios.post(`${baseURL}/auth/signup`, userData, {
       withCredentials: true,
     });
     console.log(data);
