@@ -31,167 +31,130 @@ const navItems = [
   {
     icon: <LayoutDashboard className="w-5 h-5" />,
     label: "Dashboard",
-    pathFor: {
-      admin: "/admin/dashboard",
-      superadmin: "/superadmin/dashboard",
-    },
-    roles: ["ADMIN", "superadmin"], // removed "user"
+    path: "/:role/dashboard",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Mails className="w-5 h-5" />,
     label: "All Mails",
-    pathFor: {
-      user: "/u/all-mails",
-      admin: "/admin/all-mails",
-      superadmin: "/superadmin/all-mails",
-    },
+    path: "/:role/all-mails",
     count: 50,
-    roles: ["user", "ADMIN", "superadmin"],
+    roles: ["USER", "ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Inbox className="w-5 h-5" />,
     label: "Inbox",
-    pathFor: {
-      user: "/u/inbox",
-      admin: "/admin/inbox",
-      superadmin: "/superadmin/inbox",
-    },
+    path: "/:role/inbox",
     count: 12,
-    roles: ["user", "ADMIN", "superadmin"],
+    roles: ["USER", "ADMIN"],
   },
   {
     icon: <Star className="w-5 h-5" />,
     label: "Starred",
-    pathFor: {
-      user: "/u/starred",
-      admin: "/admin/starred",
-      superadmin: "/superadmin/starred",
-    },
+    path: "/:role/starred",
     count: 3,
-    roles: ["user", "ADMIN", "superadmin"],
+    roles: ["USER"],
   },
   {
     icon: <Send className="w-5 h-5" />,
     label: "Sent",
-    pathFor: {
-      user: "/u/sent",
-      admin: "/admin/sent",
-      superadmin: "/superadmin/sent",
-    },
-    roles: ["user", "ADMIN", "superadmin"],
+    path: "/:role/sent",
+    roles: ["USER"],
   },
   {
     icon: <Archive className="w-5 h-5" />,
     label: "Archive",
-    pathFor: {
-      user: "/u/archive",
-      admin: "/admin/archive",
-      superadmin: "/superadmin/archive",
-    },
-    roles: ["user", "ADMIN", "superadmin"],
+    path: "/:role/archive",
+    roles: ["USER"],
   },
   {
     icon: <Trash2 className="w-5 h-5" />,
     label: "Trash",
-    pathFor: {
-      user: "/u/trash",
-      admin: "/admin/trash",
-      superadmin: "/superadmin/trash",
-    },
-    roles: ["user", "ADMIN", "superadmin"],
+    path: "/:role/trash",
+    roles: ["USER"],
   },
   {
     icon: <Globe className="w-5 h-5" />,
     label: "Domains",
-    pathFor: {
-      admin: "/admin/domains",
-      superadmin: "/superadmin/domains",
-    },
-    roles: ["ADMIN", "superadmin"],
+    path: "/:role/domains",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Users className="w-5 h-5" />,
     label: "Users",
-    pathFor: {
-      admin: "/admin/users",
-      superadmin: "/superadmin/users",
-    },
-    roles: ["ADMIN", "superadmin"],
+    path: "/:role/users",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Mailbox className="w-5 h-5" />,
     label: "Mailboxes",
-    pathFor: {
-      admin: "/admin/mailboxes",
-      superadmin: "/superadmin/mailboxes",
-    },
-    roles: ["ADMIN", "superadmin"],
+    path: "/:role/mailboxes",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <CreditCard className="w-5 h-5" />,
     label: "Billing",
-    pathFor: {
-      admin: "/admin/billing",
-      superadmin: "/superadmin/billing",
-    },
-    roles: ["ADMIN", "superadmin"],
+    path: "/:role/billing",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Settings className="w-5 h-5" />,
     label: "Settings",
-    pathFor: {
-      admin: "/admin/settings",
-      superadmin: "/superadmin/settings",
-    },
-    roles: ["ADMIN", "superadmin"],
+    path: "/:role/settings",
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Shield className="w-5 h-5" />,
     label: "System Logs",
     path: "/superadmin/logs",
-    roles: ["superadmin"],
+    roles: ["SUPER_ADMIN"],
   },
   {
     icon: <Zap className="w-5 h-5" />,
     label: "Admin Tools",
     path: "/superadmin/tools",
-    roles: ["superadmin"],
+    roles: ["SUPER_ADMIN"],
   },
 ];
 
 /* ─── Sidebar component ─────────────────────────────────────────── */
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const dispatch = useDispatch();
+  const { user: currentUser } = useSelector((state) => state.auth);
+
   useEffect(() => {
-    dispatch(getCurrentUser());
-  }, [dispatch]);
+    if (!currentUser) {
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, currentUser]);
 
-  const { user } = useSelector((state) => state.auth);
-  console.log(user);
-
-  const role = user?.role;
-
+  const role = currentUser?.role?.toUpperCase().replace(" ", "_");
   const location = useLocation();
 
-  const visibleLinks = navItems.filter((i) => i.roles.includes(role));
+  if (!role) return null;
 
-  if (["ADMIN", "superadmin"].includes(role)) {
-    visibleLinks.sort((a, b) =>
-      a.label === "Dashboard" ? -1 : b.label === "Dashboard" ? 1 : 0
-    );
-  }
+  // Get the base path based on role
+  const basePath =
+    role === "USER" ? "/u" : role === "ADMIN" ? "/admin" : "/superadmin";
 
-  const superOnly =
-    role === "superadmin"
-      ? visibleLinks.filter(
-          (i) => i.roles.length === 1 && i.roles[0] === "superadmin"
-        )
-      : [];
+  // Filter and prepare sidebar items
+  const visibleLinks = navItems
+    .filter((item) => item.roles.includes(role))
+    .map((item) => ({
+      ...item,
+      path: item.path.replace(":role", basePath.replace("/", "")),
+    }));
 
-  const regular = visibleLinks.filter((i) => !superOnly.includes(i));
+  // Separate super admin items
+  const superAdminItems = visibleLinks.filter(
+    (item) => item.roles.length === 1 && item.roles[0] === "SUPER_ADMIN"
+  );
+  const regularItems = visibleLinks.filter(
+    (item) => !superAdminItems.includes(item)
+  );
 
   const labelTitle =
-    role === "superadmin"
+    role === "SUPERADMIN"
       ? "Super Administrator"
       : role === "ADMIN"
       ? "Administrator"
@@ -235,41 +198,34 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       {/* Navigation */}
       <div className="flex-1 p-4 space-y-6 overflow-y-auto">
         <nav className="space-y-1">
-          {regular.map((item) => {
-            const path = getPath(item, role);
-            return (
-              <SidebarItem
-                key={item.label}
-                icon={item.icon}
-                label={item.label}
-                path={path}
-                count={item.count}
-                active={location.pathname === path}
-                setSidebarOpen={setSidebarOpen}
-              />
-            );
-          })}
+          {regularItems.map((item) => (
+            <SidebarItem
+              key={item.label}
+              icon={item.icon}
+              label={item.label}
+              path={item.path}
+              count={item.count}
+              active={location.pathname.startsWith(item.path)}
+              setSidebarOpen={setSidebarOpen}
+            />
+          ))}
         </nav>
-
-        {superOnly.length > 0 && (
+        {superAdminItems.length > 0 && (
           <div className="space-y-1">
             <h3 className="text-xs font-semibold text-gray-400 uppercase mt-6 mb-2">
               Super Admin
             </h3>
-            {superOnly.map((item) => {
-              const path = getPath(item, role);
-              return (
-                <SidebarItem
-                  key={item.label}
-                  icon={item.icon}
-                  label={item.label}
-                  path={path}
-                  count={item.count}
-                  active={location.pathname === path}
-                  setSidebarOpen={setSidebarOpen}
-                />
-              );
-            })}
+            {superAdminItems.map((item) => (
+              <SidebarItem
+                key={item.label}
+                icon={item.icon}
+                label={item.label}
+                path={item.path}
+                count={item.count}
+                active={location.pathname.startsWith(item.path)}
+                setSidebarOpen={setSidebarOpen}
+              />
+            ))}
           </div>
         )}
 
@@ -313,7 +269,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       )}
 
       {/* Profile for user */}
-      {role === "user" && (
+      {role === "USER" && (
         <div className="p-4 border-t border-gray-200">
           <Link
             to="/u/profile"

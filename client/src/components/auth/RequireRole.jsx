@@ -3,15 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getCurrentUser } from "../../redux/slices/authSlice";
 
-export default function RequireRole({ roles }) {
+export default function RequireRole({ allowedRoles }) {
   const dispatch = useDispatch();
-
   const { user, isLoading } = useSelector((state) => state.auth);
-  console.log(user);
-  console.log(user?.role);
-  console.log(roles);
-  
-  
 
   useEffect(() => {
     if (!user) {
@@ -23,13 +17,15 @@ export default function RequireRole({ roles }) {
     return <div>Loading...</div>;
   }
 
-  if (!user || !user.role) {
+  if (!user) {
     return <Navigate to="/" replace />;
   }
 
-  if (!roles.includes(user.role)) {
-    console.warn("Access denied for role:", user.role);
-    return <Navigate to="/admin/dashboard" replace />;
+  // Normalize role names to match between frontend and backend
+  const userRole = user.role?.toUpperCase().replace(" ", "_");
+
+  if (!allowedRoles.includes(userRole)) {
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
