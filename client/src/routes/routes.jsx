@@ -72,7 +72,7 @@ export const router = createBrowserRouter(
       <Route
         path="/admin"
         element={
-          <RequireRole roles={["admin", "superadmin"]}>
+          <RequireRole roles={["ADMIN", "superadmin"]}>
             <DashboardLayout />
           </RequireRole>
         }
