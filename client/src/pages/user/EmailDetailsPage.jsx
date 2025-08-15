@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import usePageTitle from "../components/usePageTitle";
+import usePageTitle from "../../components/usePageTitle";
 import { useSelector } from "react-redux";
 
 // Mock email data

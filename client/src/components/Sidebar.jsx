@@ -39,14 +39,14 @@ const navItems = [
     label: "All Mails",
     path: "/:role/all-mails",
     count: 50,
-    roles: ["USER", "ADMIN", "SUPER_ADMIN"],
+    roles: ["USER"],
   },
   {
     icon: <Inbox className="w-5 h-5" />,
     label: "Inbox",
     path: "/:role/inbox",
     count: 12,
-    roles: ["USER", "ADMIN"],
+    roles: ["USER"],
   },
   {
     icon: <Star className="w-5 h-5" />,

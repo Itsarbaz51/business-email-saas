@@ -11,6 +11,7 @@ import {
   Clock,
   Award,
 } from "lucide-react";
+import { PricingSection } from "../PricingSection";
 
 const LandingPage = () => {
   const features = [
@@ -148,6 +149,10 @@ const LandingPage = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      <section>
+        <PricingSection />
       </section>
 
       {/* Features Section */}

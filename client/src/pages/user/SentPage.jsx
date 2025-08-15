@@ -1,8 +1,8 @@
 import { Send, Clock, User, Archive, Heart, MessageCircle, Reply, Forward } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../components/MailToolbar.jsx";
+import MailToolbar from "../../components/MailToolbar.jsx";
 import { useState } from "react";
-import usePageTitle from "../components/usePageTitle.js";
+import usePageTitle from "../../components/usePageTitle.js";
 
 // Mock sent emails data
 const sentMails = [

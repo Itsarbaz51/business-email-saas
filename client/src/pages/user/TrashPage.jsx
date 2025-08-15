@@ -1,8 +1,8 @@
 import { Trash2, Clock, User, RotateCcw, MessageCircle, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../components/MailToolbar.jsx";
+import MailToolbar from "../../components/MailToolbar.jsx";
 import { useState } from "react";
-import usePageTitle from "../components/usePageTitle.js";
+import usePageTitle from "../../components/usePageTitle.js";
 
 // Mock trash emails data
 const trashedMails = [

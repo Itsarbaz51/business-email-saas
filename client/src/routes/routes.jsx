@@ -6,24 +6,28 @@ import {
 } from "react-router-dom";
 
 import HomePage from "../pages/renderer/LandingPage.jsx";
-import InboxPage from "../pages/InboxPage.jsx";
-// import SentPage from "../pages/SentPage.jsx";
-// import ArchivePage from "../pages/ArchivePage.jsx";
-// import TrashPage from "../pages/TrashPage.jsx";
-// import AllMailsPage from "../pages/AllMailsPage.jsx";
-// import EmailDetailsPage from "../pages/EmailDetailsPage.jsx";
+import InboxPage from "../pages/user/InboxPage.jsx";
 import RequireRole from "../components/auth/RequireRole.jsx";
 import DashboardLayout from "../layout/DashboardLayout.jsx";
 import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import Login from "../pages/Login.jsx";
+import DomainsPage from "../pages/admin/DomainsPage.jsx";
+import UsersPage from "../pages/admin/UsersPage.jsx";
+import MailboxesPage from "../pages/admin/MailboxesPage.jsx";
+import SettingsPage from "../pages/admin/SettingsPage.jsx";
+import BillingPage from "../pages/admin/BillingPage.jsx";
+import RendererPageLayout from "../layout/RendererPageLayout.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       {/* public routes */}
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<RendererPageLayout />}>
+        <Route index={true} element={<HomePage />} />
+        <Route path="/login" element={<Login />} />
+      </Route>
+
       {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
 
       {/* protected routes */}
@@ -35,11 +39,15 @@ export const router = createBrowserRouter(
         </Route>
       </Route>
 
-      <Route element={<RequireRole allowedRoles={["ADMIN", "SUPER_ADMIN"]} />}>
+      <Route element={<RequireRole allowedRoles={["ADMIN"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
-          {/* ... other admin routes */}
+          <Route path="domains" element={<DomainsPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="mailboxes" element={<MailboxesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="billing" element={<BillingPage />} />
         </Route>
       </Route>
 

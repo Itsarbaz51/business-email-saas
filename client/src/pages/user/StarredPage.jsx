@@ -1,50 +1,41 @@
-import { Archive, Clock, User, Inbox, Heart, MessageCircle, RotateCcw } from "lucide-react";
+import { Star, Clock, User, Archive, Heart, MessageCircle, StarOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import MailToolbar from "../components/MailToolbar.jsx";
+import MailToolbar from "../../components/MailToolbar.jsx";
 import { useState } from "react";
-import usePageTitle from "../components/usePageTitle.js";
+import usePageTitle from "../../components/usePageTitle.js";
 
-// Mock archived emails data
-const archivedMails = [
+// Mock starred emails data
+const starredMails = [
   {
     id: 1,
-    from: "Newsletter Team",
-    subject: "Monthly Newsletter - October 2024",
-    preview: "Check out our latest updates, product releases, and company news in this month's newsletter.",
-    date: "2 weeks ago",
-    size: "2.8 MB",
-    category: "newsletter"
+    from: "Sarah Johnson",
+    subject: "Important: Q4 Budget Review Meeting",
+    preview: "Please review the attached budget documents before our meeting tomorrow at 2 PM.",
+    date: "2 hours ago",
+    size: "2.3 MB",
+    priority: "high"
   },
   {
     id: 2,
-    from: "Project Manager",
-    subject: "Project Alpha - Final Documentation",
-    preview: "All project documentation has been completed and is ready for final review and approval.",
-    date: "3 weeks ago",
-    size: "5.2 MB",
-    category: "project"
+    from: "Marketing Team",
+    subject: "New Campaign Launch Strategy",
+    preview: "The new product launch campaign is ready for review. Please check the creative assets.",
+    date: "1 day ago",
+    size: "5.1 MB",
+    priority: "medium"
   },
   {
     id: 3,
-    from: "IT Support",
-    subject: "System Maintenance Complete",
-    preview: "The scheduled system maintenance has been completed successfully. All systems are now operational.",
-    date: "1 month ago",
-    size: "156 KB",
-    category: "system"
-  },
-  {
-    id: 4,
-    from: "Training Team",
-    subject: "Completed: Security Training Module",
-    preview: "Thank you for completing the mandatory security training. Your certificate is attached.",
-    date: "1 month ago",
+    from: "John Smith",
+    subject: "Project Milestone Achieved",
+    preview: "Great news! We've successfully completed the first phase of the project ahead of schedule.",
+    date: "3 days ago",
     size: "892 KB",
-    category: "training"
+    priority: "low"
   }
 ];
 
-export default function ArchivePage() {
+export default function StarredPage() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [selectedMails, setSelectedMails] = useState(new Set());
 
@@ -58,21 +49,21 @@ export default function ArchivePage() {
     setSelectedMails(newSelected);
   };
 
-  const restoreFromArchive = (mailId) => {
+  const removeFromStarred = (mailId) => {
     // In a real app, this would update the backend
-    console.log(`Restoring mail ${mailId} from archive`);
+    console.log(`Removing mail ${mailId} from starred`);
   };
 
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case 'newsletter': return 'bg-purple-100 text-purple-700';
-      case 'project': return 'bg-blue-100 text-blue-700';
-      case 'system': return 'bg-orange-100 text-orange-700';
-      case 'training': return 'bg-green-100 text-green-700';
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-700';
+      case 'medium': return 'bg-yellow-100 text-yellow-700';
+      case 'low': return 'bg-green-100 text-green-700';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
-  usePageTitle("archive");
+
+  usePageTitle('star')
 
 
   return (
@@ -81,14 +72,14 @@ export default function ArchivePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Archive className="w-6 h-6 text-gray-600" />
-            Archive
+            <Star className="w-6 h-6 text-yellow-500 fill-current" />
+            Starred
           </h1>
-          <p className="text-gray-600 text-sm">You have {archivedMails.length} archived conversations</p>
+          <p className="text-gray-600 text-sm">You have {starredMails.length} starred conversations</p>
         </div>
         <div className="flex gap-3">
           <button className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm">
-            Restore all
+            Unstar all
           </button>
           <button className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm">
             Filter
@@ -100,7 +91,7 @@ export default function ArchivePage() {
 
       {/* Mail Cards */}
       <div key={refreshKey} className="space-y-4">
-        {archivedMails.map((mail) => (
+        {starredMails.map((mail) => (
           <div
             key={mail.id}
             className={`group relative bg-white rounded-xl p-6 border border-gray-200 hover:border-violet-300 transition-all duration-300 hover:shadow-lg hover:shadow-violet-100 ${selectedMails.has(mail.id) ? 'border-violet-400 bg-violet-50' : ''
@@ -113,7 +104,7 @@ export default function ArchivePage() {
 
             <div className="flex items-start gap-4">
               {/* Avatar */}
-              <div className="w-12 h-12 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
+              <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                 {mail.from.charAt(0).toUpperCase()}
               </div>
 
@@ -122,8 +113,8 @@ export default function ArchivePage() {
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <h3 className="font-semibold text-gray-900 truncate">{mail.from}</h3>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getCategoryColor(mail.category)}`}>
-                      {mail.category}
+                    <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(mail.priority)}`}>
+                      {mail.priority} priority
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-500 text-sm">
@@ -132,7 +123,7 @@ export default function ArchivePage() {
                   </div>
                 </div>
 
-                <Link to={`/archive/detail/${mail.id}`}>
+                <Link to={`/starred/detail/${mail.id}`}>
                   <h4 className="text-gray-800 font-medium mb-2 hover:text-violet-600 transition-colors">
                     {mail.subject}
                   </h4>
@@ -155,15 +146,15 @@ export default function ArchivePage() {
                       {selectedMails.has(mail.id) ? 'Selected' : 'Select'}
                     </button>
                     <button
-                      onClick={() => restoreFromArchive(mail.id)}
+                      onClick={() => removeFromStarred(mail.id)}
                       className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
                     >
-                      <RotateCcw className="w-4 h-4" />
-                      Restore
+                      <StarOff className="w-4 h-4" />
+                      Unstar
                     </button>
                     <button className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm">
-                      <Inbox className="w-4 h-4" />
-                      Move to Inbox
+                      <Archive className="w-4 h-4" />
+                      Archive
                     </button>
                   </div>
                   <div className="text-xs text-gray-400">
