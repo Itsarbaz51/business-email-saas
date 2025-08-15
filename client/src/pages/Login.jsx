@@ -62,21 +62,19 @@ export default function Login() {
     try {
       const resultAction = await dispatch(login(formData));
       console.log(resultAction);
-      
-      if (login.fulfilled.match(resultAction)) {
-        const user = resultAction.payload;
-        // Redirect based on role
-        switch (user.role.toUpperCase()) {
-          case "ADMIN":
-          case "SUPER_ADMIN":
-            navigate("/admin/dashboard");
-            break;
-          case "USER":
-            navigate("/u/inbox");
-            break;
-          default:
-            navigate("/");
-        }
+
+      const user = resultAction.payload;
+      // Redirect based on role
+      switch (user.role.toUpperCase()) {
+        case "ADMIN":
+        case "SUPER_ADMIN":
+          navigate("/admin/dashboard");
+          break;
+        case "USER":
+          navigate("/u/inbox");
+          break;
+        default:
+          navigate("/");
       }
     } catch (error) {
       console.error("Login failed:", error);
