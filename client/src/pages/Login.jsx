@@ -63,7 +63,7 @@ export default function Login() {
       const resultAction = await dispatch(login(formData));
       console.log(resultAction);
 
-      const user = resultAction.payload;
+      const user = resultAction.data;
       // Redirect based on role
       switch (user.role.toUpperCase()) {
         case "ADMIN":
