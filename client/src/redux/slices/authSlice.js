@@ -97,9 +97,9 @@ export const login = (credentials) => async (dispatch) => {
 export const getCurrentUser = () => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
+    const data = await axios.get(`${baseURL}/auth/get-current-user`);
     console.log(data);
-    
+
     dispatch(authGetCurrentUser(data));
   } catch (error) {
     dispatch(authFail(handleError(error)));
