@@ -43,7 +43,7 @@ const authSlice = createSlice({
       state.error = action.payload;
       toast.error(action.payload);
     },
-    logout: (state) => {
+    logoutUser: (state) => {
       state.user = null;
       state.isLoading = false;
       state.success = null;
@@ -62,7 +62,7 @@ export const {
   authRequest,
   authSuccess,
   authFail,
-  logout,
+  logoutUser,
   authGetCurrentUser,
 } = authSlice.actions;
 
@@ -106,29 +106,17 @@ export const getCurrentUser = () => async (dispatch) => {
   }
 };
 
-// Update admin
-export const updateAdmin = (updateData) => async (dispatch) => {
+// Logout
+export const logout = () => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(
-      `${baseURL}/auth/update-admin`,
-      updateData
-    );
-    dispatch(
-      authSuccess({
-        user: data.data.user,
-        message: "User updated successfully.",
-        showToast: true,
-      })
-    );
+    const data = await axios.get(`${baseURL}/auth/logout`, {
+      withCredentials: true,
+    });
+    console.log(data);
   } catch (error) {
     dispatch(authFail(handleError(error)));
   }
-};
-
-// Logout
-export const logoutUser = () => (dispatch) => {
-  dispatch(logout());
 };
 
 // Forgot password
