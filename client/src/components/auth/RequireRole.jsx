@@ -24,7 +24,7 @@ export default function RequireRole({ roles }) {
 
   if (!roles.includes(user.role)) {
     console.warn("Access denied for role:", user.role);
-    return <Navigate to="/" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <Outlet />;
