@@ -24,7 +24,7 @@ export const router = createBrowserRouter(
       {/* public routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
 
       {/* protected routes */}
       <Route element={<RequireRole allowedRoles={["USER"]} />}>
