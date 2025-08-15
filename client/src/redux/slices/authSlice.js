@@ -66,9 +66,10 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 export const login = (credentials) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
+    const { data } = await axios.post(`${baseURL}/auth/login`, credentials, {
+      withCredentials: true, // backend credentials: true ke liye zaruri
+    });
     console.log(data);
-    
     dispatch(authSuccess(data));
   } catch (err) {
     dispatch(authFail(handleError(err)));
