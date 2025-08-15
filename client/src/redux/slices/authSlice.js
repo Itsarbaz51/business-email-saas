@@ -52,7 +52,7 @@ const authSlice = createSlice({
     },
     authGetCurrentUser: (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user || null;
+      state.user = action.payload.user;
       state.error = null;
     },
   },
@@ -77,6 +77,8 @@ export const register = (userData) => async (dispatch) => {
   try {
     const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
     dispatch(authSuccess({ ...data, showToast: true }));
+    // Auto-fetch current user after signup
+    dispatch(getCurrentUser());
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
@@ -88,6 +90,8 @@ export const login = (credentials) => async (dispatch) => {
   try {
     const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
     dispatch(authSuccess({ ...data, showToast: true }));
+    // Auto-fetch current user after login
+    dispatch(getCurrentUser());
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
@@ -97,10 +101,8 @@ export const login = (credentials) => async (dispatch) => {
 export const getCurrentUser = () => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const data = await axios.get(`${baseURL}/auth/get-current-user`);
-    console.log(data);
-
-    dispatch(authGetCurrentUser(data));
+    const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
+    dispatch(authGetCurrentUser(data)); // Now passes correct object { user: {...} }
   } catch (error) {
     dispatch(authFail(handleError(error)));
   }
@@ -110,10 +112,8 @@ export const getCurrentUser = () => async (dispatch) => {
 export const logout = () => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const data = await axios.get(`${baseURL}/auth/logout`, {
-      withCredentials: true,
-    });
-    console.log(data);
+    await axios.get(`${baseURL}/auth/logout`);
+    dispatch(logoutUser());
   } catch (error) {
     dispatch(authFail(handleError(error)));
   }
