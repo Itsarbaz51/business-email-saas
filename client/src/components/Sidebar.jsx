@@ -35,7 +35,7 @@ const navItems = [
       admin: "/admin/dashboard",
       superadmin: "/superadmin/dashboard",
     },
-    roles: ["admin", "superadmin"], // removed "user"
+    roles: ["ADMIN", "superadmin"], // removed "user"
   },
   {
     icon: <Mails className="w-5 h-5" />,
@@ -46,7 +46,7 @@ const navItems = [
       superadmin: "/superadmin/all-mails",
     },
     count: 50,
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Inbox className="w-5 h-5" />,
@@ -57,7 +57,7 @@ const navItems = [
       superadmin: "/superadmin/inbox",
     },
     count: 12,
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Star className="w-5 h-5" />,
@@ -68,7 +68,7 @@ const navItems = [
       superadmin: "/superadmin/starred",
     },
     count: 3,
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Send className="w-5 h-5" />,
@@ -78,7 +78,7 @@ const navItems = [
       admin: "/admin/sent",
       superadmin: "/superadmin/sent",
     },
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Archive className="w-5 h-5" />,
@@ -88,7 +88,7 @@ const navItems = [
       admin: "/admin/archive",
       superadmin: "/superadmin/archive",
     },
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Trash2 className="w-5 h-5" />,
@@ -98,7 +98,7 @@ const navItems = [
       admin: "/admin/trash",
       superadmin: "/superadmin/trash",
     },
-    roles: ["user", "admin", "superadmin"],
+    roles: ["user", "ADMIN", "superadmin"],
   },
   {
     icon: <Globe className="w-5 h-5" />,
@@ -107,7 +107,7 @@ const navItems = [
       admin: "/admin/domains",
       superadmin: "/superadmin/domains",
     },
-    roles: ["admin", "superadmin"],
+    roles: ["ADMIN", "superadmin"],
   },
   {
     icon: <Users className="w-5 h-5" />,
@@ -116,7 +116,7 @@ const navItems = [
       admin: "/admin/users",
       superadmin: "/superadmin/users",
     },
-    roles: ["admin", "superadmin"],
+    roles: ["ADMIN", "superadmin"],
   },
   {
     icon: <Mailbox className="w-5 h-5" />,
@@ -125,7 +125,7 @@ const navItems = [
       admin: "/admin/mailboxes",
       superadmin: "/superadmin/mailboxes",
     },
-    roles: ["admin", "superadmin"],
+    roles: ["ADMIN", "superadmin"],
   },
   {
     icon: <CreditCard className="w-5 h-5" />,
@@ -134,7 +134,7 @@ const navItems = [
       admin: "/admin/billing",
       superadmin: "/superadmin/billing",
     },
-    roles: ["admin", "superadmin"],
+    roles: ["ADMIN", "superadmin"],
   },
   {
     icon: <Settings className="w-5 h-5" />,
@@ -143,7 +143,7 @@ const navItems = [
       admin: "/admin/settings",
       superadmin: "/superadmin/settings",
     },
-    roles: ["admin", "superadmin"],
+    roles: ["ADMIN", "superadmin"],
   },
   {
     icon: <Shield className="w-5 h-5" />,
@@ -161,21 +161,21 @@ const navItems = [
 
 /* ─── Sidebar component ─────────────────────────────────────────── */
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
-
-
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(getCurrentUser());
   }, [dispatch]);
 
-  const role = useSelector((state) => state.auth);
-  console.log(role);
-  
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
+  const role = user.role;
+
   const location = useLocation();
 
   const visibleLinks = navItems.filter((i) => i.roles.includes(role));
 
-  if (["admin", "superadmin"].includes(role)) {
+  if (["ADMIN", "superadmin"].includes(role)) {
     visibleLinks.sort((a, b) =>
       a.label === "Dashboard" ? -1 : b.label === "Dashboard" ? 1 : 0
     );
@@ -193,7 +193,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const labelTitle =
     role === "superadmin"
       ? "Super Administrator"
-      : role === "admin"
+      : role === "ADMIN"
       ? "Administrator"
       : "Labels";
 
