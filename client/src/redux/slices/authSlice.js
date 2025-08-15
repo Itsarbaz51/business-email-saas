@@ -94,6 +94,8 @@ export const getCurrentUser = () => async (dispatch) => {
   dispatch(authRequest());
   try {
     const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
+    console.log("Auth slice data :", data);
+
     dispatch(authGetCurrentUser(data));
     return data;
   } catch (error) {
