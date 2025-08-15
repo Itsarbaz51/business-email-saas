@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import InputField from "../components/ui/InputField";
 import ButtonField from "../components/ui/ButtonField";
-import { useDispatch } from "react-redux";
+// import { useDispatch } from "react-redux";
 // import { register } from "../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +19,7 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
   const redirectToLogin = useNavigate();
 
   const handleInputChange = (e) => {
