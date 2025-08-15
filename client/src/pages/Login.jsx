@@ -60,10 +60,26 @@ export default function Login() {
 
     setLoading(true);
     try {
-      await dispatch(login(formData));
+      const resultAction = await dispatch(login(formData));
+      if (login.fulfilled.match(resultAction)) {
+        const user = resultAction.payload;
+        // Redirect based on role
+        switch (user.role.toUpperCase()) {
+          case "ADMIN":
+          case "SUPER_ADMIN":
+            navigate("/admin/dashboard");
+            break;
+          case "USER":
+            navigate("/u/inbox");
+            break;
+          default:
+            navigate("/");
+        }
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
     } finally {
       setLoading(false);
-      navigate("/admin/dashboard");
     }
   };
 

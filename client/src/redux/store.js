@@ -1,13 +1,19 @@
-// src/redux/store.js
-import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import statsReducer from './slices/statsSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import authReducer from "./features/auth/authSlice";
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    stats: statsReducer,
+    // Add other reducers here
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ["auth/loginSuccess"],
+        ignoredPaths: ["auth.user"],
+      },
+    }),
+  // devTools: process.env.NODE_ENV !== "production",
 });
 
 export default store;

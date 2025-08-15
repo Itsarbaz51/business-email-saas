@@ -13,6 +13,7 @@ const initialState = {
   isLoading: false,
   error: null,
   success: null,
+  isAuthenticated: false,
 };
 
 const authSlice = createSlice({
@@ -26,8 +27,11 @@ const authSlice = createSlice({
     },
     authSuccess: (state, action) => {
       state.isLoading = false;
-      // Handles both { user: {...} } and { data: { user: {...} } }
-      state.user = action.payload?.user || action.payload?.data?.user || null;
+      const userData =
+        action.payload?.user || action.payload?.data?.user || action.payload;
+      state.user = userData;
+      state.currentUserData = userData;
+      state.isAuthenticated = true;
       state.success = action.payload?.message || "Success";
       state.error = null;
 
@@ -38,18 +42,20 @@ const authSlice = createSlice({
     authFail: (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
+      state.isAuthenticated = false;
       toast.error(action.payload);
     },
     logoutUser: (state) => {
       state.user = null;
+      state.currentUserData = null;
       state.isLoading = false;
+      state.isAuthenticated = false;
       state.success = null;
       state.error = null;
     },
-    authGetCurrentUser: (state, action) => {
-      state.isLoading = false;
-      state.currentUserData = action.payload?.user || action.payload?.data?.user || null;
+    clearAuthState: (state) => {
       state.error = null;
+      state.success = null;
     },
   },
 });
@@ -59,93 +65,108 @@ export const {
   authSuccess,
   authFail,
   logoutUser,
-  authGetCurrentUser,
+  clearAuthState,
 } = authSlice.actions;
 
-export default authSlice.reducer;
-
 // Helper function to handle errors
-const handleError = (err) =>
-  err.response?.data?.message || err.message || "Something went wrong.";
+const handleError = (err) => {
+  const errorMessage =
+    err.response?.data?.message || err.message || "Something went wrong";
+  toast.error(errorMessage);
+  return errorMessage;
+};
 
-// Register
+// Async action creators
 export const register = (userData) => async (dispatch) => {
-  dispatch(authRequest());
   try {
+    dispatch(authRequest());
     const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
     dispatch(authSuccess({ ...data, showToast: true }));
-    dispatch(getCurrentUser()); // refresh after signup
+    await dispatch(getCurrentUser()); // Wait for current user to load
+    return data;
   } catch (err) {
     dispatch(authFail(handleError(err)));
+    throw err;
   }
 };
 
-// Login
 export const login = (credentials) => async (dispatch) => {
-  dispatch(authRequest());
   try {
+    dispatch(authRequest());
     const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
     dispatch(authSuccess({ ...data, showToast: true }));
-    dispatch(getCurrentUser()); // refresh after login
+    await dispatch(getCurrentUser()); // Wait for current user to load
+    return data;
   } catch (err) {
     dispatch(authFail(handleError(err)));
+    throw err;
   }
 };
 
-// Get current user
 export const getCurrentUser = () => async (dispatch) => {
-  dispatch(authRequest());
   try {
+    dispatch(authRequest());
     const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
-    console.log("Auth slice data:", data);
-    dispatch(authGetCurrentUser(data));
+    dispatch(authSuccess(data)); // Use authSuccess to update all state
     return data;
   } catch (error) {
-    dispatch(authFail(handleError(error)));
+    // Don't show toast for current user fetch failure
+    dispatch(authFail(error.response?.data?.message || "Session expired"));
+    throw error;
   }
 };
 
-// Logout
 export const logout = () => async (dispatch) => {
-  dispatch(authRequest());
   try {
+    dispatch(authRequest());
     await axios.get(`${baseURL}/auth/logout`);
     dispatch(logoutUser());
     toast.success("Logged out successfully");
   } catch (error) {
     dispatch(authFail(handleError(error)));
+    throw error;
   }
 };
 
-// Forgot Password
-export const forgotPassword =
-  (email, otp = null, newPassword = null) =>
-  async (dispatch) => {
-    dispatch(authRequest());
-    try {
-      const body = { email };
-      let endpoint = "/forgot-password";
-      if (otp && newPassword) {
-        body.otp = otp;
-        body.newPassword = newPassword;
-      }
-      const { data } = await axios.post(`${baseURL}/auth${endpoint}`, body);
-      dispatch(authSuccess({ ...data, showToast: true }));
-    } catch (err) {
-      dispatch(authFail(handleError(err)));
-    }
-  };
-
-// Reset Password
-export const resetPassword = (passwordFormData) => async (dispatch) => {
-  dispatch(authRequest());
+export const forgotPassword = (email) => async (dispatch) => {
   try {
-    const { data } = await axios.post(
-      `${baseURL}/auth/reset-password`,
-      passwordFormData
-    );
+    dispatch(authRequest());
+    const { data } = await axios.post(`${baseURL}/auth/forgot-password`, {
+      email,
+    });
     dispatch(authSuccess({ ...data, showToast: true }));
+    return data;
   } catch (err) {
     dispatch(authFail(handleError(err)));
+    throw err;
   }
 };
+
+export const resetPassword = (passwordData) => async (dispatch) => {
+  try {
+    dispatch(authRequest());
+    const { data } = await axios.post(
+      `${baseURL}/auth/reset-password`,
+      passwordData
+    );
+    dispatch(authSuccess({ ...data, showToast: true }));
+    return data;
+  } catch (err) {
+    dispatch(authFail(handleError(err)));
+    throw err;
+  }
+};
+
+export const verifyOTP = (otpData) => async (dispatch) => {
+  try {
+    dispatch(authRequest());
+    const { data } = await axios.post(`${baseURL}/auth/verify-otp`, otpData);
+    dispatch(authSuccess({ ...data, showToast: true }));
+    return data;
+  } catch (err) {
+    dispatch(authFail(handleError(err)));
+    throw err;
+  }
+};
+
+export default authSlice.reducer;

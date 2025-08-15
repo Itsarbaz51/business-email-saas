@@ -1,31 +1,33 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { getCurrentUser } from "../../redux/slices/authSlice";
 
 export default function RequireRole({ allowedRoles }) {
   const dispatch = useDispatch();
-  const { user, isLoading } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading } = useSelector(
+    (state) => state.auth
+  );
+  const location = useLocation();
 
   useEffect(() => {
-    if (!user) {
+    if (!user && isAuthenticated) {
       dispatch(getCurrentUser());
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, isAuthenticated]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Normalize role names to match between frontend and backend
-  const userRole = user.role?.toUpperCase().replace(" ", "_");
+  const normalizedRole = user?.role?.toUpperCase().replace(/\s+/g, "_");
 
-  if (!allowedRoles.includes(userRole)) {
-    return <Navigate to="/" replace />;
+  if (!allowedRoles.includes(normalizedRole)) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
   return <Outlet />;
