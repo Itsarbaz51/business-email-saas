@@ -1,502 +1,359 @@
-import React, { useState } from 'react';
-import { Plus, Settings, Mail, Globe, Check, X, AlertCircle, Copy, ExternalLink, Server, Shield, Zap } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Plus, Check, Copy, Globe, Shield, ShieldAlert, Edit, Trash2, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import AddDomain from "../../components/forms/AddDomain.jsx";
+import { addDomain, fetchDomains, verifyDomain } from "../../redux/slices/domainSlice.js";
+import NotFound from "../../components/NotFound.jsx";
 
 function DomainsPage() {
-  const [domains, setDomains] = useState([
-    {
-      id: 1,
-      name: 'primewebdev.in',
-      status: 'active',
-      emailProvider: 'primemail',
-      verified: true,
-      sslEnabled: true,
-      expiryDate: '2025-12-15',
-      emailAccounts: 5,
-      maxEmails: 100
-    },
-    {
-      id: 2,
-      name: 'example.com',
-      status: 'pending',
-      emailProvider: 'primemail',
-      verified: false,
-      sslEnabled: false,
-      expiryDate: '2025-08-20',
-      emailAccounts: 2,
-      maxEmails: 50
-    }
-  ]);
+  const dispatch = useDispatch();
+  const [showForm, setShowForm] = useState(false);
+  const [editDomainData, setEditDomainData] = useState(null);
+  const [copiedItem, setCopiedItem] = useState(null);
+  const [expandedDomains, setExpandedDomains] = useState(new Set());
+  const [isVerifying, setIsVerifying] = useState({});
+  const [verificationTimer, setVerificationTimer] = useState({});
 
-  const [selectedDomain, setSelectedDomain] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [showAddDomain, setShowAddDomain] = useState(false);
-  const [newDomain, setNewDomain] = useState({
-    name: '',
-    emailProvider: 'primemail'
-  });
+  useEffect(() => {
+    dispatch(fetchDomains());
+  }, [dispatch]);
 
-  const emailProviders = {
-    primemail: {
-      name: 'PrimeMail Pro',
-      color: 'bg-gradient-to-r from-blue-600 to-purple-600',
-      icon: <Mail className="w-5 h-5" />,
-      settings: {
-        incoming: {
-          server: 'mail.primewebdev.in',
-          port: 993,
-          ssl: true
-        },
-        outgoing: {
-          server: 'smtp.primewebdev.in',
-          port: 587,
-          ssl: true
-        }
-      }
-    },
-    primemail_basic: {
-      name: 'PrimeMail Basic',
-      color: 'bg-gradient-to-r from-green-500 to-blue-500',
-      icon: <Server className="w-5 h-5" />,
-      settings: {
-        incoming: {
-          server: 'imap.primewebdev.in',
-          port: 993,
-          ssl: true
-        },
-        outgoing: {
-          server: 'smtp.primewebdev.in',
-          port: 465,
-          ssl: true
-        }
-      }
-    },
-    primemail_enterprise: {
-      name: 'PrimeMail Enterprise',
-      color: 'bg-gradient-to-r from-purple-600 to-pink-600',
-      icon: <Shield className="w-5 h-5" />,
-      settings: {
-        incoming: {
-          server: 'secure.primewebdev.in',
-          port: 993,
-          ssl: true
-        },
-        outgoing: {
-          server: 'relay.primewebdev.in',
-          port: 587,
-          ssl: true
-        }
-      }
+  const domains = useSelector((state) => state.domain.domains || []);
+
+  const handleAddDomain = (data) => {
+    if (editDomainData) {
+      dispatch(editDomain({ id: editDomainData.id, ...data }));
+    } else {
+      dispatch(addDomain(data));
     }
+    setShowForm(false);
+    setEditDomainData(null);
   };
 
-  const handleAddDomain = () => {
-    if (newDomain.name) {
-      const domain = {
-        id: domains.length + 1,
-        name: newDomain.name,
-        status: 'pending',
-        emailProvider: newDomain.emailProvider,
-        verified: false,
-        sslEnabled: false,
-        expiryDate: '2026-01-01',
-        emailAccounts: 0,
-        maxEmails: emailProviders[newDomain.emailProvider].name === 'PrimeMail Enterprise' ? 500 : 
-                   emailProviders[newDomain.emailProvider].name === 'PrimeMail Pro' ? 100 : 50
-      };
-      setDomains([...domains, domain]);
-      setNewDomain({ name: '', emailProvider: 'zoho' });
-      setShowAddDomain(false);
-    }
+  const verifyDnsHandler = (domainName, domainId) => {
+    setIsVerifying(prev => ({ ...prev, [domainId]: true }));
+    const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
+    setVerificationTimer(prev => ({ ...prev, [domainId]: expiryTime }));
+
+    dispatch(verifyDomain(domainName))
+      .unwrap()
+      .finally(() => {
+        setIsVerifying(prev => ({ ...prev, [domainId]: false }));
+      });
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
+  const isWithin24h = (domainId) => {
+    const timer = verificationTimer[domainId];
+    return timer && Date.now() < timer;
   };
 
-  const getDNSRecords = (domain) => {
-    const provider = emailProviders[domain.emailProvider];
-    return [
-      {
-        type: 'MX',
-        name: '@',
-        value: 'mail.primewebdev.in',
-        priority: 10
-      },
-      {
-        type: 'MX',
-        name: '@',
-        value: 'mail2.primewebdev.in',
-        priority: 20
-      },
-      {
-        type: 'TXT',
-        name: '@',
-        value: 'v=spf1 include:primewebdev.in ~all',
-        priority: '-'
-      },
-      {
-        type: 'TXT',
-        name: '_dmarc',
-        value: 'v=DMARC1; p=quarantine; rua=mailto:dmarc@primewebdev.in',
-        priority: '-'
-      },
-      {
-        type: 'CNAME',
-        name: 'mail',
-        value: 'mail.primewebdev.in',
-        priority: '-'
-      },
-      {
-        type: 'CNAME',
-        name: 'webmail',
-        value: 'webmail.primewebdev.in',
-        priority: '-'
+  const handleCopy = (value, id) => {
+    navigator.clipboard.writeText(value);
+    setCopiedItem(id);
+    setTimeout(() => setCopiedItem(null), 2000);
+  };
+
+  const toggleDomainExpansion = (domainId) => {
+    setExpandedDomains(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(domainId)) {
+        newSet.delete(domainId);
+      } else {
+        newSet.add(domainId);
       }
-    ];
+      return newSet;
+    });
+  };
+
+  const getDomainVerificationStatus = (domain) => {
+    const hasRecords = domain.dnsRecords && domain.dnsRecords.length > 0;
+    if (!hasRecords) return { isVerified: false, hasRecords: false };
+
+    const allVerified = domain.dnsRecords.every(record => record.isVerified === true);
+    return { isVerified: allVerified, hasRecords: true };
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex justify-between items-center">
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Domain Management</h1>
-              <p className="text-gray-600 mt-1">Configure your domains and email servers</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Domain Management</h1>
+              <p className="text-gray-600">Manage your domains and DNS configurations</p>
             </div>
             <button
-              onClick={() => setShowAddDomain(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+              onClick={() => {
+                setEditDomainData(null);
+                setShowForm(true);
+              }}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              <Plus size={20} />
-              Add Domain
+              <Plus size={20} /> Add Domain
             </button>
           </div>
         </div>
 
-        {/* Add Domain Modal */}
-        {showAddDomain && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-md">
-              <h2 className="text-xl font-bold mb-4">Add New Domain</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Domain Name</label>
-                  <input
-                    type="text"
-                    value={newDomain.name}
-                    onChange={(e) => setNewDomain({...newDomain, name: e.target.value})}
-                    placeholder="example.com"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+        {/* Stats Cards */}
+        {domains?.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Globe className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Provider</label>
-                  <select
-                    value={newDomain.emailProvider}
-                    onChange={(e) => setNewDomain({...newDomain, emailProvider: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {Object.entries(emailProviders).map(([key, provider]) => (
-                      <option key={key} value={key}>{provider.name}</option>
-                    ))}
-                  </select>
+                  <p className="text-sm text-gray-600">Total Domains</p>
+                  <p className="text-xl font-bold text-gray-900">{domains.length}</p>
                 </div>
               </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={() => setShowAddDomain(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddDomain}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Add Domain
-                </button>
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <ShieldCheck className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Verified</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    {domains.filter(d => getDomainVerificationStatus(d).isVerified).length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <ShieldAlert className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Active</p>
+                  <p className="text-xl font-bold text-gray-900">
+                    {domains.filter(d => d.status === 'active').length}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Domains Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
-          {domains.map((domain) => (
-            <div
-              key={domain.id}
-              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer"
-              onClick={() => setSelectedDomain(domain)}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{domain.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      domain.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {domain.status}
-                    </span>
-                    {domain.verified ? (
-                      <Check size={16} className="text-green-500" />
-                    ) : (
-                      <X size={16} className="text-red-500" />
-                    )}
-                  </div>
-                </div>
-                <div className={`w-10 h-10 ${emailProviders[domain.emailProvider].color} rounded-lg flex items-center justify-center text-white`}>
-                  {emailProviders[domain.emailProvider].icon}
-                </div>
-              </div>
-
-              <div className="space-y-2 text-sm text-gray-600">
-                <div className="flex justify-between">
-                  <span>Email Provider:</span>
-                  <span className="font-medium">{emailProviders[domain.emailProvider].name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Email Accounts:</span>
-                  <span className="font-medium">{domain.emailAccounts}/{domain.maxEmails}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Expires:</span>
-                  <span className="font-medium">{new Date(domain.expiryDate).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>SSL:</span>
-                  <span className={`font-medium ${domain.sslEnabled ? 'text-green-600' : 'text-red-600'}`}>
-                    {domain.sslEnabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-              </div>
+        {/* Domain Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {domains?.length === 0 ? (
+            <div className="col-span-full">
+              <NotFound
+                title="No Domains Found"
+                message="You haven't added any domains yet. Add one to get started."
+                icon="inbox"
+              />
             </div>
-          ))}
+          ) : (
+            domains?.map((domain) => {
+              const verificationStatus = getDomainVerificationStatus(domain);
+              const isVerifyingDomain = isVerifying[domain.id];
+              const isPending = isWithin24h(domain.id);
+
+              return (
+                <div key={domain.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                  {/* Domain Header */}
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-gray-900 mb-3 break-all">
+                          {domain.name}
+                        </h3>
+
+                        {/* Status and Verification Row */}
+                        <div className="flex gap-2">
+                          {/* Domain Status */}
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${domain.status === "active"
+                                ? "bg-green-100 text-green-800 border border-green-200"
+                                : "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                                }`}
+                            >
+                              {domain.status}
+                            </span>
+                          </div>
+
+                          {/* Verification Status */}
+                          <div className="flex items-center gap-2">
+                            {verificationStatus.isVerified ? (
+                              <div className="flex items-center gap-1">
+                                <ShieldCheck size={16} className="text-green-600" />
+                                <span className="text-xs font-medium text-green-600">DNS Verified</span>
+                              </div>
+                            ) : isPending ? (
+                              <div className="flex items-center gap-1">
+                                <span className="text-xs font-medium text-blue-600">Verification Pending (upto 24h)</span>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                              </div>
+                            ) : verificationStatus.hasRecords ? (
+                              <button
+                                className="flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                                disabled={isVerifyingDomain}
+                                onClick={() => verifyDnsHandler(domain.name, domain.id)}
+                              >
+                                <ShieldAlert size={16} className="text-red-600" />
+                                <span className="text-xs font-medium text-red-600">
+                                  {isVerifyingDomain ? "Verifying..." : "DNS Unverified"}
+                                </span>
+                                <span className="text-xs text-gray-500">(click to verify)</span>
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <Shield size={16} className="text-gray-400" />
+                                <span className="text-xs font-medium text-gray-500">No DNS Records</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditDomainData(domain);
+                          setShowForm(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        <Edit size={14} />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => console.log("delete", domain.id)}
+                        className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={14} />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* DNS Records Section */}
+                  {domain.dnsRecords?.length > 0 && (
+                    <div className="border-t border-gray-100 bg-gray-50">
+                      <div className="p-6">
+                        <button
+                          onClick={() => toggleDomainExpansion(domain.id)}
+                          className="w-full flex items-center justify-between hover:bg-gray-100 p-2 rounded-lg transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-sm font-semibold text-gray-900">
+                              DNS Records ({domain.dnsRecords.length})
+                            </span>
+                          </div>
+                          <div>
+                            {expandedDomains.has(domain.id) ? (
+                              <ChevronUp size={16} className="text-gray-500" />
+                            ) : (
+                              <ChevronDown size={16} className="text-gray-500" />
+                            )}
+                          </div>
+                        </button>
+                        <span className="text-xs mx-2.5 text-gray-500">
+                          Add these to your DNS provider
+                        </span>
+
+                        {expandedDomains.has(domain.id) && (
+                          <div className="mt-4 space-y-3 max-h-64 overflow-y-auto">
+                            <div className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+                              <p className="font-medium mb-1">Instructions:</p>
+                              <p>Add these DNS records to your domain provider (GoDaddy, Hostinger, etc.) to verify ownership and enable services.</p>
+                            </div>
+
+                            {domain.dnsRecords.map((record) => (
+                              <div
+                                key={record.id}
+                                className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
+                              >
+                                {/* Record Type and Status */}
+                                <div className="flex justify-between items-center mb-3">
+                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-md border border-blue-200">
+                                    {record.recordType}
+                                  </span>
+                                  {record.isVerified && (
+                                    <div className="flex items-center gap-1 text-green-600">
+                                      <ShieldCheck size={12} />
+                                      <span className="text-xs">Verified</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Record Details */}
+                                <div className="space-y-3">
+                                  {/* Record Name */}
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                                      Name
+                                    </label>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
+                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
+                                        {record.recordName}
+                                      </span>
+                                      <button
+                                        onClick={() => handleCopy(record.recordName, `name-${record.id}`)}
+                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+                                        title="Copy to clipboard"
+                                      >
+                                        {copiedItem === `name-${record.id}` ? (
+                                          <Check size={14} className="text-green-600" />
+                                        ) : (
+                                          <Copy size={14} />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Record Value */}
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                                      Value
+                                    </label>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
+                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
+                                        {record.recordValue}
+                                      </span>
+                                      <button
+                                        onClick={() => handleCopy(record.recordValue, `value-${record.id}`)}
+                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+                                        title="Copy to clipboard"
+                                      >
+                                        {copiedItem === `value-${record.id}` ? (
+                                          <Check size={14} className="text-green-600" />
+                                        ) : (
+                                          <Copy size={14} />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
 
-        {/* Domain Details Panel */}
-        {selectedDomain && (
-          <div className="bg-white rounded-lg shadow-sm">
-            <div className="border-b border-gray-200">
-              <div className="flex justify-between items-center p-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedDomain.name}</h2>
-                  <p className="text-gray-600">{emailProviders[selectedDomain.emailProvider].name}</p>
-                </div>
-                <button
-                  onClick={() => setSelectedDomain(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              
-              <div className="px-6">
-                <nav className="flex space-x-8">
-                  {['overview', 'email-settings', 'dns-records'].map((tab) => (
-                    <button
-                      key={tab}
-                      onClick={() => setActiveTab(tab)}
-                      className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab
-                          ? 'border-blue-500 text-blue-600'
-                          : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    >
-                      {tab.charAt(0).toUpperCase() + tab.slice(1).replace('-', ' ')}
-                    </button>
-                  ))}
-                </nav>
-              </div>
-            </div>
-
-            <div className="p-6">
-              {activeTab === 'overview' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Domain Status</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Verification Status:</span>
-                        <span className={`font-medium ${selectedDomain.verified ? 'text-green-600' : 'text-red-600'}`}>
-                          {selectedDomain.verified ? 'Verified' : 'Pending'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">SSL Certificate:</span>
-                        <span className={`font-medium ${selectedDomain.sslEnabled ? 'text-green-600' : 'text-red-600'}`}>
-                          {selectedDomain.sslEnabled ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Expiry Date:</span>
-                        <span className="font-medium">{new Date(selectedDomain.expiryDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Email Statistics</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Active Accounts:</span>
-                        <span className="font-medium">{selectedDomain.emailAccounts}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Max Accounts:</span>
-                        <span className="font-medium">{selectedDomain.maxEmails}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Provider:</span>
-                        <span className="font-medium">{emailProviders[selectedDomain.emailProvider].name}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'email-settings' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Server Configuration</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                          <Mail size={18} />
-                          Incoming Mail (IMAP)
-                        </h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Server:</span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono">{emailProviders[selectedDomain.emailProvider].settings.incoming.server}</span>
-                              <button
-                                onClick={() => copyToClipboard(emailProviders[selectedDomain.emailProvider].settings.incoming.server)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <Copy size={14} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Port:</span>
-                            <span className="font-mono">{emailProviders[selectedDomain.emailProvider].settings.incoming.port}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">SSL/TLS:</span>
-                            <span className="font-medium text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
-                          <Settings size={18} />
-                          Outgoing Mail (SMTP)
-                        </h4>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Server:</span>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono">{emailProviders[selectedDomain.emailProvider].settings.outgoing.server}</span>
-                              <button
-                                onClick={() => copyToClipboard(emailProviders[selectedDomain.emailProvider].settings.outgoing.server)}
-                                className="text-blue-600 hover:text-blue-800"
-                              >
-                                <Copy size={14} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Port:</span>
-                            <span className="font-mono">{emailProviders[selectedDomain.emailProvider].settings.outgoing.port}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">SSL/TLS:</span>
-                            <span className="font-medium text-green-600">Enabled</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Email Account Settings</h3>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="flex items-start gap-3">
-                        <AlertCircle size={20} className="text-blue-600 mt-0.5" />
-                        <div>
-                          <h4 className="font-medium text-blue-900">Setup Instructions</h4>
-                          <p className="text-blue-800 text-sm mt-1">
-                            Use these settings to configure your email client. Username should be your full email address (e.g., own@{selectedDomain.name})
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === 'dns-records' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Required DNS Records</h3>
-                    <p className="text-gray-600 mb-4">
-                      Add these DNS records to your domain registrar to enable email functionality:
-                    </p>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse border border-gray-200">
-                      <thead>
-                        <tr className="bg-gray-50">
-                          <th className="border border-gray-200 px-4 py-2 text-left">Type</th>
-                          <th className="border border-gray-200 px-4 py-2 text-left">Name</th>
-                          <th className="border border-gray-200 px-4 py-2 text-left">Value</th>
-                          <th className="border border-gray-200 px-4 py-2 text-left">Priority</th>
-                          <th className="border border-gray-200 px-4 py-2 text-left">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {getDNSRecords(selectedDomain).map((record, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="border border-gray-200 px-4 py-2 font-mono text-sm">{record.type}</td>
-                            <td className="border border-gray-200 px-4 py-2 font-mono text-sm">{record.name}</td>
-                            <td className="border border-gray-200 px-4 py-2 font-mono text-sm">{record.value}</td>
-                            <td className="border border-gray-200 px-4 py-2 font-mono text-sm">{record.priority}</td>
-                            <td className="border border-gray-200 px-4 py-2">
-                              <button
-                                onClick={() => copyToClipboard(record.value)}
-                                className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                              >
-                                <Copy size={14} />
-                                Copy
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle size={20} className="text-yellow-600 mt-0.5" />
-                      <div>
-                        <h4 className="font-medium text-yellow-900">Important Note</h4>
-                        <p className="text-yellow-800 text-sm mt-1">
-                          DNS changes can take up to 24-48 hours to propagate. After adding these records, 
-                          verification may take some time to complete.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Add Domain Form Modal */}
+        <AddDomain
+          isOpen={showForm}
+          onClose={() => setShowForm(false)}
+          onSubmit={handleAddDomain}
+          initialData={editDomainData}
+        />
       </div>
     </div>
   );
