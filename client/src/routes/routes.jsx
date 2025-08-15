@@ -18,6 +18,7 @@ import MailboxesPage from "../pages/admin/MailboxesPage.jsx";
 import SettingsPage from "../pages/admin/SettingsPage.jsx";
 import BillingPage from "../pages/admin/BillingPage.jsx";
 import RendererPageLayout from "../layout/RendererPageLayout.jsx";
+import Register from "../pages/Register.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -26,6 +27,7 @@ export const router = createBrowserRouter(
       <Route path="/" element={<RendererPageLayout />}>
         <Route index={true} element={<HomePage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
 
       {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
