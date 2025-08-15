@@ -19,9 +19,9 @@ import {
   User,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-// import { useDispatch, useSelector } from "react-redux";
-// import { useEffect } from "react";
-// import { getCurrentUser } from "../redux/slices/authSlice.js";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { getCurrentUser } from "../redux/slices/authSlice.js";
 
 /* ─── Helper: choose correct path per role ───────────────────────── */
 const getPath = (item, role) => (item.pathFor ? item.pathFor[role] : item.path);
@@ -161,12 +161,16 @@ const navItems = [
 
 /* ─── Sidebar component ─────────────────────────────────────────── */
 export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
-  // const dispatch = useDispatch();
-  // useEffect(() => {
-  //   dispatch(getCurrentUser());
-  // }, [dispatch]);
 
-  const role = "admin";
+
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
+  const role = useSelector((state) => state.auth);
+  console.log(role);
+  
   const location = useLocation();
 
   const visibleLinks = navItems.filter((i) => i.roles.includes(role));

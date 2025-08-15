@@ -5,10 +5,10 @@ import "react-toastify/dist/ReactToastify.css";
 
 axios.defaults.withCredentials = true;
 
-const initialUser = JSON.parse(localStorage.getItem("user") || "null");
+const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const initialState = {
-  user: initialUser,
+  user: null,
   isLoading: false,
   error: null,
   success: null,
@@ -29,7 +29,6 @@ const authSlice = createSlice({
 
       if (user) {
         state.user = user;
-        localStorage.setItem("user", JSON.stringify(user));
       }
 
       state.success = message || "Success";
@@ -49,46 +48,63 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.success = null;
       state.error = null;
-      localStorage.removeItem("user");
       toast.success("Logged Out Successfully.");
+    },
+    authGetCurrentUser: (state, action) => {
+      state.isLoading = false;
+      state.user = action.payload.user || null;
+      state.error = null;
     },
   },
 });
 
-export const { authRequest, authSuccess, authFail, logout } = authSlice.actions;
+export const {
+  authRequest,
+  authSuccess,
+  authFail,
+  logout,
+  authGetCurrentUser,
+} = authSlice.actions;
+
 export default authSlice.reducer;
 
 const handleError = (err) =>
   err.response?.data?.message || err.message || "Something went wrong.";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL;
-
+// Register
 export const register = (userData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/signup`, userData, {
-      withCredentials: true,
-    });
-    console.log(data);
-    dispatch(authSuccess(data));
+    const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
+    dispatch(authSuccess({ ...data, showToast: true }));
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
 };
 
+// Login
 export const login = (credentials) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    const { data } = await axios.post(`${baseURL}/auth/login`, credentials, {
-      withCredentials: true,
-    });
-    console.log(data);
-    dispatch(authSuccess(data));
+    const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
+    dispatch(authSuccess({ ...data, showToast: true }));
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
 };
 
+// Get current user
+export const getCurrentUser = () => async (dispatch) => {
+  dispatch(authRequest());
+  try {
+    const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
+    dispatch(authGetCurrentUser(data));
+  } catch (error) {
+    dispatch(authFail(handleError(error)));
+  }
+};
+
+// Update admin
 export const updateAdmin = (updateData) => async (dispatch) => {
   dispatch(authRequest());
   try {
@@ -96,7 +112,6 @@ export const updateAdmin = (updateData) => async (dispatch) => {
       `${baseURL}/auth/update-admin`,
       updateData
     );
-
     dispatch(
       authSuccess({
         user: data.data.user,
@@ -109,10 +124,12 @@ export const updateAdmin = (updateData) => async (dispatch) => {
   }
 };
 
+// Logout
 export const logoutUser = () => (dispatch) => {
   dispatch(logout());
 };
 
+// Forgot password
 export const forgotPassword =
   (email, otp = null, newPassword = null) =>
   async (dispatch) => {
@@ -125,7 +142,6 @@ export const forgotPassword =
         body.newPassword = newPassword;
       }
       await axios.post(`${baseURL}/auth${endpoint}`, body);
-
       dispatch(
         authSuccess({
           message: "Password recovery step completed.",
@@ -137,11 +153,11 @@ export const forgotPassword =
     }
   };
 
+// Reset password
 export const resetPassword = (passwordFormData) => async (dispatch) => {
   dispatch(authRequest());
   try {
     await axios.post(`${baseURL}/auth/reset-password`, passwordFormData);
-
     dispatch(
       authSuccess({
         message: "Password reset successfully.",
