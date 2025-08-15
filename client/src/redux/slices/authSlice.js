@@ -25,16 +25,11 @@ const authSlice = createSlice({
     },
     authSuccess: (state, action) => {
       state.isLoading = false;
-      const { user, message, showToast } = action.payload || {};
-
-      if (user) {
-        state.user = user;
-      }
-
-      state.success = message || "Success";
+      state.user = action.payload.user || null;
+      state.success = action.payload.message || "Success";
       state.error = null;
 
-      if (showToast) {
+      if (action.payload?.showToast) {
         toast.success(state.success);
       }
     },
@@ -48,7 +43,6 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.success = null;
       state.error = null;
-      toast.success("Logged Out Successfully.");
     },
     authGetCurrentUser: (state, action) => {
       state.isLoading = false;
@@ -68,21 +62,9 @@ export const {
 
 export default authSlice.reducer;
 
+// Helper function to handle errors
 const handleError = (err) =>
   err.response?.data?.message || err.message || "Something went wrong.";
-
-// Register
-export const register = (userData) => async (dispatch) => {
-  dispatch(authRequest());
-  try {
-    const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
-    dispatch(authSuccess({ ...data, showToast: true }));
-    // Auto-fetch current user after signup
-    dispatch(getCurrentUser());
-  } catch (err) {
-    dispatch(authFail(handleError(err)));
-  }
-};
 
 // Login
 export const login = (credentials) => async (dispatch) => {
@@ -90,7 +72,6 @@ export const login = (credentials) => async (dispatch) => {
   try {
     const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
     dispatch(authSuccess({ ...data, showToast: true }));
-    // Auto-fetch current user after login
     dispatch(getCurrentUser());
   } catch (err) {
     dispatch(authFail(handleError(err)));
@@ -102,7 +83,8 @@ export const getCurrentUser = () => async (dispatch) => {
   dispatch(authRequest());
   try {
     const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
-    dispatch(authGetCurrentUser(data)); // Now passes correct object { user: {...} }
+    dispatch(authGetCurrentUser(data));
+    return data;
   } catch (error) {
     dispatch(authFail(handleError(error)));
   }
@@ -114,12 +96,13 @@ export const logout = () => async (dispatch) => {
   try {
     await axios.get(`${baseURL}/auth/logout`);
     dispatch(logoutUser());
+    toast.success("Logged out successfully");
   } catch (error) {
     dispatch(authFail(handleError(error)));
   }
 };
 
-// Forgot password
+// Forgot Password
 export const forgotPassword =
   (email, otp = null, newPassword = null) =>
   async (dispatch) => {
@@ -131,29 +114,22 @@ export const forgotPassword =
         body.otp = otp;
         body.newPassword = newPassword;
       }
-      await axios.post(`${baseURL}/auth${endpoint}`, body);
-      dispatch(
-        authSuccess({
-          message: "Password recovery step completed.",
-          showToast: true,
-        })
-      );
+      const { data } = await axios.post(`${baseURL}/auth${endpoint}`, body);
+      dispatch(authSuccess({ ...data, showToast: true }));
     } catch (err) {
       dispatch(authFail(handleError(err)));
     }
   };
 
-// Reset password
+// Reset Password
 export const resetPassword = (passwordFormData) => async (dispatch) => {
   dispatch(authRequest());
   try {
-    await axios.post(`${baseURL}/auth/reset-password`, passwordFormData);
-    dispatch(
-      authSuccess({
-        message: "Password reset successfully.",
-        showToast: true,
-      })
+    const { data } = await axios.post(
+      `${baseURL}/auth/reset-password`,
+      passwordFormData
     );
+    dispatch(authSuccess({ ...data, showToast: true }));
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
