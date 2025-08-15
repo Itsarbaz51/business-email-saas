@@ -25,8 +25,9 @@ const authSlice = createSlice({
     },
     authSuccess: (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user || null;
-      state.success = action.payload.message || "Success";
+      // Handles both { user: {...} } and { data: { user: {...} } }
+      state.user = action.payload?.user || action.payload?.data?.user || null;
+      state.success = action.payload?.message || "Success";
       state.error = null;
 
       if (action.payload?.showToast) {
@@ -46,7 +47,7 @@ const authSlice = createSlice({
     },
     authGetCurrentUser: (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
+      state.user = action.payload?.user || action.payload?.data?.user || null;
       state.error = null;
     },
   },
@@ -72,6 +73,7 @@ export const register = (userData) => async (dispatch) => {
   try {
     const { data } = await axios.post(`${baseURL}/auth/signup`, userData);
     dispatch(authSuccess({ ...data, showToast: true }));
+    dispatch(getCurrentUser()); // refresh after signup
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
@@ -83,7 +85,7 @@ export const login = (credentials) => async (dispatch) => {
   try {
     const { data } = await axios.post(`${baseURL}/auth/login`, credentials);
     dispatch(authSuccess({ ...data, showToast: true }));
-    dispatch(getCurrentUser());
+    dispatch(getCurrentUser()); // refresh after login
   } catch (err) {
     dispatch(authFail(handleError(err)));
   }
@@ -94,8 +96,7 @@ export const getCurrentUser = () => async (dispatch) => {
   dispatch(authRequest());
   try {
     const { data } = await axios.get(`${baseURL}/auth/get-current-user`);
-    console.log("Auth slice data :", data);
-
+    console.log("Auth slice data:", data);
     dispatch(authGetCurrentUser(data));
     return data;
   } catch (error) {
