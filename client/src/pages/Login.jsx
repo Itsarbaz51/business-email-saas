@@ -61,6 +61,8 @@ export default function Login() {
     setLoading(true);
     try {
       const resultAction = await dispatch(login(formData));
+      console.log(resultAction);
+      
       if (login.fulfilled.match(resultAction)) {
         const user = resultAction.payload;
         // Redirect based on role
