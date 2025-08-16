@@ -106,7 +106,7 @@ export const addDomain = (domainName) => async (dispatch) => {
 export const verifyDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
-        const { data } = await axios.get(`${baseURL}/domain/verify-domain/${domainName}`);
+        const { data } = await axios.get(`${baseURL}/domain/verify-domian/${domainName}`);
         dispatch(verifyDomainSuccess(data.data)); // Pass updated domain object
         dispatch(fetchDomains()); // Optional: refresh list
     } catch (err) {
@@ -127,11 +127,12 @@ export const updateDomain = (id, domainData) => async (dispatch) => {
 };
 
 // ✅ Delete domain
-export const deleteDomain = (id) => async (dispatch) => {
+export const deleteDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
-        await axios.delete(`${baseURL}/domains/${id}`);
-        dispatch(deleteDomainSuccess(id));
+        await axios.delete(`${baseURL}/domain/delete-domian/${domainName}`);
+        dispatch(deleteDomainSuccess(domainName));
+        dispatch(fetchDomains())
     } catch (err) {
         dispatch(domainFail(err?.response?.data?.message || "Failed to delete domain"));
     }

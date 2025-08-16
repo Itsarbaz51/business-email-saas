@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Plus, Check, Copy, Globe, Shield, ShieldAlert, Edit, Trash2, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
 import AddDomain from "../../components/forms/AddDomain.jsx";
-import { addDomain, fetchDomains, verifyDomain } from "../../redux/slices/domainSlice.js";
+import { addDomain, deleteDomain, fetchDomains, verifyDomain } from "../../redux/slices/domainSlice.js";
 import NotFound from "../../components/NotFound.jsx";
+import ConfirmDelete from "../ConfirmDelete.jsx";
 
 function DomainsPage() {
   const dispatch = useDispatch();
@@ -72,6 +73,18 @@ function DomainsPage() {
     const allVerified = domain.dnsRecords.every(record => record.isVerified === true);
     return { isVerified: allVerified, hasRecords: true };
   };
+
+
+  // inside DomainsPage component
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      dispatch(deleteDomain(deleteTarget.name));
+      setDeleteTarget(null);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
@@ -226,12 +239,19 @@ function DomainsPage() {
                         Edit
                       </button>
                       <button
-                        onClick={() => console.log("delete", domain.id)}
+                        onClick={() => setDeleteTarget(domain)}
                         className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         <Trash2 size={14} />
                         Delete
                       </button>
+                      <ConfirmDelete
+                        isOpen={!!deleteTarget}
+                        domainName={deleteTarget?.name}
+                        onClose={() => setDeleteTarget(null)}
+                        onConfirm={handleDeleteConfirm}
+                      />
+
                     </div>
                   </div>
 
