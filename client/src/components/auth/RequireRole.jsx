@@ -17,10 +17,10 @@ export default function RequireRole({ allowedRoles }) {
     return <div>Loading...</div>; // Jab tak API call complete nahi hoti, kuch mat karo
   }
 
-  if (!currentUserData) {
-    // Jab confirm ho jaye ki user nahi hai
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
+  // if (!currentUserData) {
+  //   // Jab confirm ho jaye ki user nahi hai
+  //   return <Navigate to="/login" state={{ from: location }} replace />;
+  // }
 
   const normalizedRole = currentUserData.role?.toUpperCase();
 
