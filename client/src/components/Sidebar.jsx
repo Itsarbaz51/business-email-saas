@@ -79,12 +79,12 @@ const navItems = [
     path: "/:role/domains",
     roles: ["ADMIN", "SUPER_ADMIN"],
   },
-  {
-    icon: <Users className="w-5 h-5" />,
-    label: "Users",
-    path: "/:role/users",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
+  // {
+  //   icon: <Users className="w-5 h-5" />,
+  //   label: "Users",
+  //   path: "/:role/users",
+  //   roles: ["ADMIN", "SUPER_ADMIN"],
+  // },
   {
     icon: <Mailbox className="w-5 h-5" />,
     label: "Mailboxes",

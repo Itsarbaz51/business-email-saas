@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./slices/authSlice.js";
 import subscribeReducer from "./slices/subscriptionSlice.js";
 import domainReducer from "./slices/domainSlice.js";
+import mailboxReducer from "./slices/mailboxSlice.js";
 import statsReducer from "./slices/statsSlice.js";
 
 const store = configureStore({
@@ -9,6 +10,7 @@ const store = configureStore({
     auth: authReducer,
     subscribe: subscribeReducer,
     domain: domainReducer,
+    mailbox: mailboxReducer,
     stats: statsReducer,
   },
 });

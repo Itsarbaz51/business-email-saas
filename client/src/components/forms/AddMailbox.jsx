@@ -1,52 +1,66 @@
-import React, { useState, useEffect } from "react";
-import { X, Mail, AlertCircle, Loader, Key } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Mail, AlertCircle, Loader } from "lucide-react";
 
-function AddMailbox({ isOpen, onClose, onSubmit, initialData }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export const AddMailbox = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialData,
+  
+}) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    domainId: "",
+  });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const isEdit = initialData && initialData.emailAddress;
+
+  // Avoid infinite loop by using initialData.domains directly
+  const domains = initialData?.domains || [];
+
   useEffect(() => {
-    if (initialData?.email) {
-      setEmail(initialData.email);
-      setPassword(""); // don't prefill password for security
-    } else {
-      setEmail("");
-      setPassword("");
-    }
+    if (!isOpen) return;
+
+    setFormData({
+      name: initialData?.name || "",
+      email: initialData?.emailAddress || "",
+      password: "", // leave blank on edit
+      domainId: initialData?.domainId || domains[0]?.id || "", // pre-select correct domain
+    });
+
     setError("");
     setLoading(false);
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen]); // don't include 'domains' to avoid infinite loop
 
   if (!isOpen) return null;
-
-  const validateEmail = (val) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(val.trim());
-  };
 
   const handleSubmit = async () => {
     setError("");
 
-    if (!email.trim()) {
-      setError("Mailbox email is required");
+    if (!formData.name.trim()) {
+      setError("Name is required");
       return;
     }
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address");
+    if (!formData.email.trim()) {
+      setError("Email is required");
       return;
     }
-    if (!initialData && password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if (!isEdit && !formData.password.trim()) {
+      setError("Password is required");
+      return;
+    }
+    if (!formData.domainId.trim()) {
+      setError("Please select a domain");
       return;
     }
 
     setLoading(true);
     try {
-      await onSubmit({ email: email.trim(), password });
-      setEmail("");
-      setPassword("");
+      await onSubmit(formData);
       setLoading(false);
       onClose();
     } catch (err) {
@@ -56,12 +70,8 @@ function AddMailbox({ isOpen, onClose, onSubmit, initialData }) {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter" && !loading) {
-      handleSubmit();
-    }
-    if (e.key === "Escape") {
-      onClose();
-    }
+    if (e.key === "Enter" && !loading) handleSubmit();
+    if (e.key === "Escape") onClose();
   };
 
   return (
@@ -69,21 +79,21 @@ function AddMailbox({ isOpen, onClose, onSubmit, initialData }) {
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-100 animate-in zoom-in-95 fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md transform transition-all duration-300 animate-in zoom-in-95 fade-in">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Mail className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Mail className="w-5 h-5 text-purple-600" />
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                {initialData ? "Edit Mailbox" : "Add New Mailbox"}
+                {isEdit ? "Edit Mailbox" : "Add New Mailbox"}
               </h2>
               <p className="text-sm text-gray-500">
-                {initialData
-                  ? "Update mailbox settings"
-                  : "Create a new mailbox under your domain"}
+                {isEdit
+                  ? "Update mailbox details"
+                  : "Create a new mailbox under this domain"}
               </p>
             </div>
           </div>
@@ -98,58 +108,113 @@ function AddMailbox({ isOpen, onClose, onSubmit, initialData }) {
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          {/* Email */}
-          <div className="space-y-2">
+          {/* Name */}
+          <div>
             <label className="block text-sm font-medium text-gray-700">
-              Mailbox Email
+              Name
             </label>
-            <div className="relative">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="user@example.com"
-                disabled={loading}
-                className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-                  error
-                    ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                    : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                } focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed`}
-                autoFocus
-              />
-              {loading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <Loader className="w-5 h-5 text-blue-500 animate-spin" />
-                </div>
-              )}
-            </div>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              onKeyDown={handleKeyPress}
+              placeholder="Enter mailbox name"
+              disabled={loading}
+              className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
+                error && !formData.name.trim()
+                  ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
+                  : "border-gray-200 focus:border-purple-500 focus:ring-purple-500/20"
+              } focus:outline-none focus:ring-4 disabled:opacity-50`}
+            />
           </div>
 
-          {/* Password (only for new mailbox) */}
-          {!initialData && (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  placeholder="••••••••"
-                  disabled={loading}
-                  className={`w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 ${
-                    error
-                      ? "border-red-300 focus:border-red-500 focus:ring-red-500/20"
-                      : "border-gray-200 focus:border-blue-500 focus:ring-blue-500/20"
-                  } focus:outline-none focus:ring-4 disabled:opacity-50 disabled:cursor-not-allowed`}
-                />
-                <Key className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              </div>
-            </div>
-          )}
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              onKeyDown={handleKeyPress}
+              placeholder="user@example.com"
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20 focus:outline-none focus:ring-4 disabled:opacity-50"
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              {isEdit ? "New Password" : "Password"}
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              onKeyDown={handleKeyPress}
+              placeholder={
+                isEdit
+                  ? "Leave blank to keep current password"
+                  : "Enter password"
+              }
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20 focus:outline-none focus:ring-4 disabled:opacity-50"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Status Mailbox
+            </label>
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
+              disabled={loading}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20 focus:outline-none focus:ring-4 "
+            >
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="SUSPENDED">SUSPENDED</option>
+            </select>
+          </div>
+
+          {/* Domain Select */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Select Domain
+            </label>
+            <select
+              value={formData.domainId}
+              onChange={(e) =>
+                setFormData({ ...formData, domainId: e.target.value })
+              }
+              disabled={loading || isEdit}
+              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-purple-500/20 focus:outline-none focus:ring-4 disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              <option value="">-- Select Domain --</option>
+
+              {domains.length === 0 && formData.domainId && (
+                <option value={formData.domainId}>
+                  {formData.email?.split("@")[1] || "Unknown Domain"}
+                </option>
+              )}
+
+              {domains.map((domain) => (
+                <option key={domain.id} value={domain.id}>
+                  {domain.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           {/* Error */}
           {error && (
@@ -165,28 +230,26 @@ function AddMailbox({ isOpen, onClose, onSubmit, initialData }) {
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-5 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-white border border-gray-200 rounded-lg font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-2.5 text-gray-700 hover:text-gray-900 hover:bg-white border border-gray-200 rounded-lg font-medium transition-all duration-200 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !email.trim()}
-            className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
+            disabled={loading}
+            className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:transform-none flex items-center gap-2"
           >
             {loading && <Loader className="w-4 h-4 animate-spin" />}
             {loading
-              ? initialData
+              ? isEdit
                 ? "Updating..."
-                : "Adding..."
-              : initialData
+                : "Creating..."
+              : isEdit
               ? "Update Mailbox"
-              : "Add Mailbox"}
+              : "Create Mailbox"}
           </button>
         </div>
       </div>
     </div>
   );
-}
-
-export default AddMailbox;
+};
