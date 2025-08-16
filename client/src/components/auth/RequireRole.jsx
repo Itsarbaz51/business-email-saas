@@ -5,24 +5,24 @@ import { getCurrentUser } from "../../redux/slices/authSlice";
 
 export default function RequireRole({ allowedRoles }) {
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(getCurrentUser());
-  }, [dispatch]);
-
-  const { user, isLoading } = useSelector(
-    (state) => state.auth
-  );
+  const { currentUserData, isLoading } = useSelector((state) => state.auth);
   const location = useLocation();
+
+  useEffect(() => {
+    if (!currentUserData) {
+      dispatch(getCurrentUser());
+    }
+  }, [dispatch, currentUserData]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!user?.role) {
+  if (!currentUserData) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const normalizedRole = user?.role?.toUpperCase().replace(/\s+/g, "_");
+  const normalizedRole = currentUserData.role?.toUpperCase();
 
   if (!allowedRoles.includes(normalizedRole)) {
     return <Navigate to="/unauthorized" replace />;
