@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Mail, Plus, Settings, Trash2, Edit3, Shield, Users, HardDrive, Search, Filter, MoreVertical } from 'lucide-react'
+import AddMailbox from '../../components/forms/AddMailbox'
 
 function MailboxesPage() {
   const [mailboxes, setMailboxes] = useState([
@@ -71,7 +72,7 @@ function MailboxesPage() {
   }
 
   const toggleStatus = (id) => {
-    setMailboxes(mailboxes.map(m => 
+    setMailboxes(mailboxes.map(m =>
       m.id === id ? { ...m, status: m.status === 'active' ? 'suspended' : 'active' } : m
     ))
   }
@@ -221,18 +222,17 @@ function MailboxesPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{mailbox.storage} / {mailbox.storageLimit}</div>
                       <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-blue-600 h-2 rounded-full" 
+                        <div
+                          className="bg-blue-600 h-2 rounded-full"
                           style={{ width: `${getStoragePercentage(mailbox.storage, mailbox.storageLimit)}%` }}
                         ></div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        mailbox.status === 'active' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${mailbox.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {mailbox.status}
                       </span>
                     </td>
@@ -250,13 +250,13 @@ function MailboxesPage() {
                         <button className="text-gray-600 hover:text-gray-900">
                           <Settings className="h-4 w-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => toggleStatus(mailbox.id)}
                           className="text-yellow-600 hover:text-yellow-900"
                         >
                           <Shield className="h-4 w-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteMailbox(mailbox.id)}
                           className="text-red-600 hover:text-red-900"
                         >
@@ -274,80 +274,14 @@ function MailboxesPage() {
 
       {/* Create Mailbox Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-lg font-semibold mb-4">Create New Mailbox</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={newMailbox.email}
-                  onChange={(e) => setNewMailbox({...newMailbox, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="user@yourdomain.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name
-                </label>
-                <input
-                  type="text"
-                  value={newMailbox.name}
-                  onChange={(e) => setNewMailbox({...newMailbox, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="John Doe"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={newMailbox.password}
-                  onChange={(e) => setNewMailbox({...newMailbox, password: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="••••••••"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Storage Limit (GB)
-                </label>
-                <select
-                  value={newMailbox.storageLimit}
-                  onChange={(e) => setNewMailbox({...newMailbox, storageLimit: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="1">1 GB</option>
-                  <option value="2">2 GB</option>
-                  <option value="5">5 GB</option>
-                  <option value="10">10 GB</option>
-                  <option value="25">25 GB</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateMailbox}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-              >
-                Create Mailbox
-              </button>
-            </div>
-          </div>
-        </div>
+        <AddMailbox
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          onSubmit={handleCreateMailbox}
+          initialData={newMailbox}
+        />
       )}
+
     </div>
   )
 }
