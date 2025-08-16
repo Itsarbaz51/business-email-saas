@@ -11,10 +11,10 @@ export default function RequireRole({ allowedRoles }) {
   const location = useLocation();
 
   useEffect(() => {
-    if (!user && isAuthenticated) {
+    if (!user) {
       dispatch(getCurrentUser());
     }
-  }, [dispatch, user, isAuthenticated]);
+  }, [dispatch, user]);
 
   if (isLoading) {
     return <div>Loading...</div>;
