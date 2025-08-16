@@ -5,22 +5,20 @@ import { getCurrentUser } from "../../redux/slices/authSlice";
 
 export default function RequireRole({ allowedRoles }) {
   const dispatch = useDispatch();
-  const { user, isAuthenticated, isLoading } = useSelector(
+  useEffect(() => {
+    dispatch(getCurrentUser());
+  }, [dispatch]);
+
+  const { user, isLoading } = useSelector(
     (state) => state.auth
   );
   const location = useLocation();
-
-  useEffect(() => {
-    if (!user) {
-      dispatch(getCurrentUser());
-    }
-  }, [dispatch, user]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
-  if (!isAuthenticated) {
+  if (!user?.role) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
