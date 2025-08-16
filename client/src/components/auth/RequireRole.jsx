@@ -9,23 +9,23 @@ export default function RequireRole({ allowedRoles }) {
   const location = useLocation();
 
   useEffect(() => {
-    if (!currentUserData) {
-      dispatch(getCurrentUser());
-    }
-  }, [dispatch, currentUserData]);
+    // Refresh ke baad hamesha current user fetch karo
+    dispatch(getCurrentUser());
+  }, [dispatch]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; // Jab tak API call complete nahi hoti, kuch mat karo
   }
 
   if (!currentUserData) {
+    // Jab confirm ho jaye ki user nahi hai
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   const normalizedRole = currentUserData.role?.toUpperCase();
 
   if (!allowedRoles.includes(normalizedRole)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to="/register" replace />;
   }
 
   return <Outlet />;
