@@ -19,6 +19,12 @@ import SettingsPage from "../pages/admin/SettingsPage.jsx";
 import BillingPage from "../pages/admin/BillingPage.jsx";
 import RendererPageLayout from "../layout/RendererPageLayout.jsx";
 import Register from "../pages/Register.jsx";
+import AllMailsPage from "../pages/user/AllMailsPage.jsx";
+import SentPage from "../pages/user/SentPage.jsx";
+import StarredPage from "../pages/user/StarredPage.jsx";
+import ArchivePage from "../pages/user/ArchivePage.jsx";
+import TrashPage from "../pages/user/TrashPage.jsx";
+import EmailDetailsPage from "../pages/user/EmailDetailsPage.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -37,7 +43,15 @@ export const router = createBrowserRouter(
         <Route path="/u" element={<DashboardLayout />}>
           <Route index element={<Navigate to="inbox" replace />} />
           <Route path="inbox" element={<InboxPage />} />
-          {/* ... other user routes */}
+          <Route path="all-mails" element={<AllMailsPage />} />
+          <Route path="sent" element={<SentPage />} />
+          <Route path="starred" element={<StarredPage />} />
+          <Route path="trash" element={<TrashPage />} />
+          <Route path="archive" element={<ArchivePage />} />
+
+          {/* detail pages  */}
+          <Route path="inbox/detail/:id" element={<EmailDetailsPage />} />
+          
         </Route>
       </Route>
 

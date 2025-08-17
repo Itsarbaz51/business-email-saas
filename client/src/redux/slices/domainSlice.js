@@ -24,117 +24,95 @@ const domainSlice = createSlice({
             state.error = null;
             state.success = null;
         },
+        domainSuccess: (state, action) => {
+            state.isLoading = false;
+            state.success = action.payload?.message || null;
+            state.error = null;
+            if (state.success) toast.success(state.success);
+        },
+        domainFail: (state, action) => {
+            state.isLoading = false;
+            state.error = action.payload || null;
+            state.success = null;
+            if (state.error) toast.error(state.error);
+        },
         getDomainsSuccess: (state, action) => {
             state.isLoading = false;
             state.domains = Array.isArray(action.payload) ? action.payload : [];
             state.error = null;
         },
-        addDomainSuccess: (state, action) => {
-            state.isLoading = false;
-            if (Array.isArray(state.domains)) {
-                state.domains.push(action.payload);
-            }
-            state.success = "Domain added successfully";
-            toast.success(state.success);
-        },
-        verifyDomainSuccess: (state, action) => {
-            state.isLoading = false;
-            state.domains = state.domains.map((d) =>
-                d.id === action.payload.id ? action.payload : d
-            );
-            state.success = "Domain verified successfully";
-            toast.success(state.success);
-        },
-        updateDomainSuccess: (state, action) => {
-            state.isLoading = false;
-            state.domains = state.domains.map((d) =>
-                d.id === action.payload.id ? action.payload : d
-            );
-            state.success = "Domain updated successfully";
-            toast.success(state.success);
-        },
-        deleteDomainSuccess: (state, action) => {
-            state.isLoading = false;
-            state.domains = state.domains.filter((d) => d.id !== action.payload);
-            state.success = "Domain deleted successfully";
-            toast.success(state.success);
-        },
-        domainFail: (state, action) => {
-            state.isLoading = false;
-            state.error = action.payload;
-            toast.error(action.payload);
+        clearDomainState: (state) => {
+            state.error = null;
+            state.success = null;
         },
     },
 });
 
 export const {
     domainRequest,
-    addDomainSuccess,
-    getDomainsSuccess,
-    updateDomainSuccess,
-    deleteDomainSuccess,
+    domainSuccess,
     domainFail,
+    getDomainsSuccess,
+    clearDomainState,
 } = domainSlice.actions;
 
-// ✅ Fetch domains with DNS records
 export const fetchDomains = () => async (dispatch) => {
     try {
         dispatch(domainRequest());
         const { data } = await axios.get(`${baseURL}/domain/get-domains`);
-        // If API sends object { domains: [...] }, extract i
-        console.log("data", data);
-
         dispatch(getDomainsSuccess(data.data));
+        // dispatch(domainSuccess(data));
     } catch (err) {
-        dispatch(domainFail(err?.response?.data?.message || "Failed to fetch domains"));
+        // const errMsg = err?.response?.data?.message || err?.message;
+        // dispatch(domainFail(errMsg));
+        dispatch(getDomainsSuccess([]));
     }
 };
 
-// ✅ Add domain and then refresh list
 export const addDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
         const { data } = await axios.post(`${baseURL}/domain/add-domain`, domainName);
-        dispatch(addDomainSuccess(data));
-        dispatch(fetchDomains()); // refresh
+        dispatch(domainSuccess(data));
+        dispatch(fetchDomains());
     } catch (err) {
-        dispatch(domainFail(err?.response?.data?.message || "Failed to add domain"));
+        const errMsg = err?.response?.data?.message || err?.message;
+        dispatch(domainFail(errMsg));
     }
 };
 
-// ✅ Fixed verifyDomain action
 export const verifyDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
         const { data } = await axios.get(`${baseURL}/domain/verify-domian/${domainName}`);
-        dispatch(verifyDomainSuccess(data.data)); // Pass updated domain object
-        dispatch(fetchDomains()); // Optional: refresh list
+        dispatch(domainSuccess(data));
+        dispatch(fetchDomains());
     } catch (err) {
-        dispatch(domainFail(err?.response?.data?.message || "Failed to verify domain"));
+        const errMsg = err?.response?.data?.message || err?.message;
+        dispatch(domainFail(errMsg));
     }
 };
 
-
-// ✅ Update domain
 export const updateDomain = (id, domainData) => async (dispatch) => {
     try {
         dispatch(domainRequest());
         const { data } = await axios.put(`${baseURL}/domains/${id}`, domainData);
-        dispatch(updateDomainSuccess(data));
+        dispatch(domainSuccess(data));
     } catch (err) {
-        dispatch(domainFail(err?.response?.data?.message || "Failed to update domain"));
+        const errMsg = err?.response?.data?.message || err?.message;
+        dispatch(domainFail(errMsg));
     }
 };
 
-// ✅ Delete domain
 export const deleteDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
-        await axios.delete(`${baseURL}/domain/delete-domian/${domainName}`);
-        dispatch(deleteDomainSuccess(domainName));
-        dispatch(fetchDomains())
+        const { data } = await axios.delete(`${baseURL}/domain/delete-domian/${domainName}`);
+        dispatch(domainSuccess(data));
+        dispatch(fetchDomains());
     } catch (err) {
-        dispatch(domainFail(err?.response?.data?.message || "Failed to delete domain"));
+        const errMsg = err?.response?.data?.message || err?.message;
+        dispatch(domainFail(errMsg));
     }
 };
 

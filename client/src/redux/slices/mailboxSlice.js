@@ -1,4 +1,3 @@
-// src/redux/mailboxSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -23,84 +22,63 @@ const mailboxSlice = createSlice({
       state.error = null;
       state.success = null;
     },
-    getMailboxesSuccess: (state, action) => {
+    mailboxSuccess: (state, action) => {
       state.isLoading = false;
-      state.list = action.payload.data || [];
+      state.success = action.payload?.message || null;
       state.error = null;
-    },
-
-    addMailboxSuccess: (state, action) => {
-      state.isLoading = false;
-      state.list.push(action.payload);
-      state.success = "Mailbox added successfully";
-      toast.success(state.success);
-    },
-    updateMailboxSuccess: (state, action) => {
-      state.isLoading = false;
-      state.list = state.list.map((m) =>
-        m.id === action.payload.id ? action.payload : m
-      );
-      state.success = "Mailbox updated successfully";
-      toast.success(state.success);
-    },
-    deleteMailboxSuccess: (state, action) => {
-      state.isLoading = false;
-      state.list = state.list.filter((m) => m.id !== action.payload);
-      state.success = "Mailbox deleted successfully";
-      toast.success(state.success);
+      if (state.success) toast.success(state.success);
     },
     mailboxFail: (state, action) => {
       state.isLoading = false;
-      state.error = action.payload;
-      toast.error(action.payload);
+      state.error = action.payload || null;
+      state.success = null;
+      if (state.error) toast.error(state.error);
+    },
+    getMailboxesSuccess: (state, action) => {
+      state.isLoading = false;
+      state.list = Array.isArray(action.payload) ? action.payload : [];
+      state.error = null;
+    },
+    clearMailboxState: (state) => {
+      state.error = null;
+      state.success = null;
     },
   },
 });
 
 export const {
   mailboxRequest,
-  addMailboxSuccess,
-  getMailboxesSuccess,
-  updateMailboxSuccess,
-  deleteMailboxSuccess,
+  mailboxSuccess,
   mailboxFail,
+  getMailboxesSuccess,
+  clearMailboxState,
 } = mailboxSlice.actions;
 
-// ✅ Fetch all mailboxes
 export const fetchMailboxes = () => async (dispatch) => {
   try {
     dispatch(mailboxRequest());
     const { data } = await axios.get(`${baseURL}/mailboxes/get-mailbox`);
-    console.log(data);
-
-    dispatch(getMailboxesSuccess(data));
+    dispatch(getMailboxesSuccess(data.data || []));
   } catch (err) {
-    dispatch(
-      mailboxFail(err?.response?.data?.message || "Failed to fetch mailboxes")
-    );
+    dispatch(getMailboxesSuccess([])); 
   }
 };
 
-// ✅ Add mailbox
 export const createMailbox = (mailboxData) => async (dispatch) => {
-  console.log(mailboxData);
-
   try {
     dispatch(mailboxRequest());
     const { data } = await axios.post(
       `${baseURL}/mailboxes/create-mailbox`,
       mailboxData
     );
-    dispatch(addMailboxSuccess(data));
+    dispatch(mailboxSuccess(data));
     dispatch(fetchMailboxes());
   } catch (err) {
-    dispatch(
-      mailboxFail(err?.response?.data?.message || "Failed to add mailbox")
-    );
+    const errMsg = err?.response?.data?.message || err?.message;
+    dispatch(mailboxFail(errMsg));
   }
 };
 
-// ✅ Update mailbox
 export const updateMailbox = (id, mailboxData) => async (dispatch) => {
   try {
     dispatch(mailboxRequest());
@@ -108,26 +86,25 @@ export const updateMailbox = (id, mailboxData) => async (dispatch) => {
       `${baseURL}/mailboxes/update-mailbox/${id}`,
       mailboxData
     );
-    dispatch(updateMailboxSuccess(data));
+    dispatch(mailboxSuccess(data));
     dispatch(fetchMailboxes());
   } catch (err) {
-    dispatch(
-      mailboxFail(err?.response?.data?.message || "Failed to update mailbox")
-    );
+    const errMsg = err?.response?.data?.message || err?.message;
+    dispatch(mailboxFail(errMsg));
   }
 };
 
-// ✅ Delete mailbox
 export const deleteMailbox = (id) => async (dispatch) => {
   try {
     dispatch(mailboxRequest());
-    await axios.delete(`${baseURL}/mailboxes/delete-mailbox/${id}`);
-    dispatch(deleteMailboxSuccess(id));
+    const { data } = await axios.delete(
+      `${baseURL}/mailboxes/delete-mailbox/${id}`
+    );
+    dispatch(mailboxSuccess(data));
     dispatch(fetchMailboxes());
   } catch (err) {
-    dispatch(
-      mailboxFail(err?.response?.data?.message || "Failed to delete mailbox")
-    );
+    const errMsg = err?.response?.data?.message || err?.message;
+    dispatch(mailboxFail(errMsg));
   }
 };
 

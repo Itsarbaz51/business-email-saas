@@ -11,100 +11,36 @@ import {
   Paperclip,
   Download,
   Clock,
-  User,
-  Mail,
   Shield,
   AlertTriangle,
-  MessageCircle,
   ChevronDown,
   ChevronUp,
   ExternalLink,
   Flag,
   Bookmark,
   Eye,
-  EyeOff,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import usePageTitle from "../../components/usePageTitle";
-import { useSelector } from "react-redux";
 
-// Mock email data
-const mockEmail = {
-  id: 1,
-  from: {
-    name: "Sarah Johnson",
-    email: "sarah.johnson@company.com",
-    avatar: "SJ",
-  },
-  to: [
-    { name: "John Doe", email: "john.doe@mycompany.com" },
-    { name: "Jane Smith", email: "jane.smith@mycompany.com" },
-  ],
-  cc: [{ name: "Mike Wilson", email: "mike.wilson@mycompany.com" }],
-  subject: "Q4 Marketing Campaign Strategy Review",
-  date: "2024-01-15T10:30:00Z",
-  body: `
-    <p>Hi John and Jane,</p>
-    
-    <p>I hope this email finds you well. I wanted to follow up on our discussion from last week regarding the Q4 marketing campaign strategy.</p>
-    
-    <p>After reviewing the analytics from our previous campaigns and conducting market research, I've prepared a comprehensive strategy document that outlines our approach for the upcoming quarter. Here are the key highlights:</p>
-    
-    <ul>
-      <li><strong>Target Audience:</strong> We'll be focusing on millennials and Gen Z consumers aged 25-40</li>
-      <li><strong>Budget Allocation:</strong> 40% digital advertising, 30% content marketing, 20% social media, 10% traditional media</li>
-      <li><strong>Timeline:</strong> Campaign launch scheduled for October 1st, with pre-launch activities starting September 15th</li>
-      <li><strong>Key Metrics:</strong> Targeting 25% increase in brand awareness and 15% boost in lead generation</li>
-    </ul>
-    
-    <p>I've attached the detailed strategy document for your review. Please take a look and let me know your thoughts by Friday so we can incorporate any feedback before presenting to the executive team next week.</p>
-    
-    <p>Additionally, I'd like to schedule a team meeting to discuss the implementation timeline and assign responsibilities. Are you available for a 1-hour meeting sometime next Tuesday or Wednesday?</p>
-    
-    <p>Looking forward to your feedback and collaboration on this exciting project!</p>
-    
-    <p>Best regards,<br>
-    Sarah Johnson<br>
-    Marketing Director<br>
-    Company Inc.<br>
-    Phone: (555) 123-4567<br>
-    Email: sarah.johnson@company.com</p>
-  `,
-  attachments: [
-    {
-      id: 1,
-      name: "Q4_Marketing_Strategy_2024.pdf",
-      size: "2.4 MB",
-      type: "application/pdf",
-    },
-    {
-      id: 2,
-      name: "Budget_Breakdown.xlsx",
-      size: "856 KB",
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    },
-    {
-      id: 3,
-      name: "Campaign_Timeline.png",
-      size: "1.2 MB",
-      type: "image/png",
-    },
-  ],
-  isStarred: false,
-  isLiked: false,
-  isRead: true,
-  priority: "high",
-  tags: ["Work", "Marketing"],
-  size: "2.4 MB",
-};
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { getBySingleMail } from "../../redux/slices/mailSlice";
+import usePageTitle from "../../components/usePageTitle";
 
 export default function EmailDetailsPage() {
-  const [email, setEmail] = useState(mockEmail);
+  const [email, setEmail] = useState(null);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [showFullHeaders, setShowFullHeaders] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
-  const { role } = useSelector((state) => state?.auth?.user)
+
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { mailId } = location.state;
+
+  const detailData = useSelector((state) => state.mail.singleMail);
+
+  usePageTitle("email-view");
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -128,20 +64,19 @@ export default function EmailDetailsPage() {
     });
   };
 
-  const toggleStar = () => {
+  const toggleStar = () =>
     setEmail((prev) => ({ ...prev, isStarred: !prev.isStarred }));
-  };
-
-  const toggleLike = () => {
+  const toggleLike = () =>
     setEmail((prev) => ({ ...prev, isLiked: !prev.isLiked }));
-  };
-
-  const toggleRead = () => {
+  const toggleRead = () =>
     setEmail((prev) => ({ ...prev, isRead: !prev.isRead }));
-  };
 
   const downloadAttachment = (attachment) => {
-    console.log(`Downloading ${attachment.name}`);
+    if (attachment?.url) {
+      window.open(attachment.url, "_blank");
+    } else {
+      alert("No download URL available.");
+    }
   };
 
   const getFileIcon = (type) => {
@@ -160,8 +95,56 @@ export default function EmailDetailsPage() {
     return "bg-gray-50 text-gray-700 border-gray-200";
   };
 
-  usePageTitle("email-view");
+  // Fetch mail on mount
+  useEffect(() => {
+    dispatch(getBySingleMail(mailId));
+  }, [dispatch, mailId]);
 
+  // Map Redux data to UI structure
+  useEffect(() => {
+    if (detailData) {
+      setEmail({
+        from: {
+          name: detailData.sender?.name || "",
+          email: detailData.sender?.emailAddress || "",
+          avatar: detailData.sender?.name?.charAt(0).toUpperCase() || "A",
+        },
+        to: [
+          {
+            name: detailData.toEmail,
+            email: detailData.toEmail,
+          },
+        ],
+        cc: [],
+        subject: detailData.subject,
+        date: detailData.sentAt,
+        body: `<iframe src="${detailData.body}" width="100%" height="600px" frameBorder="0" title="Email Body"></iframe>`,
+        attachments:
+          detailData.attachments?.map((att) => ({
+            id: att.id,
+            name: att.fileName || "Attachment",
+            size: att.size || "Unknown",
+            type: att.mimeType || "application/octet-stream",
+            url: att.url || "#", // Optional if you store file URLs
+          })) || [],
+        isStarred: false,
+        isLiked: false,
+        isRead: true,
+        priority: "normal",
+        tags: [],
+        size: "1.2 MB",
+      });
+    }
+  }, [detailData]);
+
+  // Loading fallback
+  if (!email) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
+        Loading email details...
+      </div>
+    );
+  }
 
   return (
     <div
@@ -171,13 +154,13 @@ export default function EmailDetailsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex-1">
-            <Link
-              to={`/${role}/dashboard`}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-2"
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-gray-900 transition-colors mb-2"
             >
               <ArrowLeft className="w-5 h-5" />
               Back to Inbox
-            </Link>
+            </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Email Details
             </h1>

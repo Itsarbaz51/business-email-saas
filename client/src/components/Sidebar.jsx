@@ -8,25 +8,20 @@ import {
   Mails,
   LayoutDashboard,
   Globe,
-  Users,
   Mailbox,
   CreditCard,
   Zap,
   X,
   Edit3,
-  Plus,
   Shield,
   User,
+  LogOut,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { getCurrentUser } from "../redux/slices/authSlice.js";
+import { getCurrentUser, logout } from "../redux/slices/authSlice.js";
 
-/* ─── Helper: choose correct path per role ───────────────────────── */
-const getPath = (item, role) => (item.pathFor ? item.pathFor[role] : item.path);
-
-/* ─── Nav items ──────────────────────────────────────────────────── */
 const navItems = [
   {
     icon: <LayoutDashboard className="w-5 h-5" />,
@@ -35,17 +30,17 @@ const navItems = [
     roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
-    icon: <Mails className="w-5 h-5" />,
-    label: "All Mails",
-    path: "/:role/all-mails",
-    count: 50,
-    roles: ["USER"],
-  },
-  {
     icon: <Inbox className="w-5 h-5" />,
     label: "Inbox",
     path: "/:role/inbox",
     count: 12,
+    roles: ["USER"],
+  },
+  {
+    icon: <Mails className="w-5 h-5" />,
+    label: "All Mails",
+    path: "/:role/all-mails",
+    count: 50,
     roles: ["USER"],
   },
   {
@@ -79,12 +74,6 @@ const navItems = [
     path: "/:role/domains",
     roles: ["ADMIN", "SUPER_ADMIN"],
   },
-  // {
-  //   icon: <Users className="w-5 h-5" />,
-  //   label: "Users",
-  //   path: "/:role/users",
-  //   roles: ["ADMIN", "SUPER_ADMIN"],
-  // },
   {
     icon: <Mailbox className="w-5 h-5" />,
     label: "Mailboxes",
@@ -117,8 +106,7 @@ const navItems = [
   },
 ];
 
-/* ─── Sidebar component ─────────────────────────────────────────── */
-export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
+export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
 
@@ -128,16 +116,17 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
     }
   }, [dispatch, currentUser]);
 
-  const role = currentUser?.role?.toUpperCase().replace(" ", "_");
+  const role =
+    currentUser?.role?.toUpperCase().replace(" ", "_") || null;
   const location = useLocation();
 
   if (!role) return null;
 
-  // Get the base path based on role
+  // Base path
   const basePath =
     role === "USER" ? "/u" : role === "ADMIN" ? "/admin" : "/superadmin";
 
-  // Filter and prepare sidebar items
+  // Sidebar links
   const visibleLinks = navItems
     .filter((item) => item.roles.includes(role))
     .map((item) => ({
@@ -145,20 +134,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
       path: item.path.replace(":role", basePath.replace("/", "")),
     }));
 
-  // Separate super admin items
+  // Split items
   const superAdminItems = visibleLinks.filter(
     (item) => item.roles.length === 1 && item.roles[0] === "SUPER_ADMIN"
   );
   const regularItems = visibleLinks.filter(
     (item) => !superAdminItems.includes(item)
   );
-
-  const labelTitle =
-    role === "SUPERADMIN"
-      ? "Super Administrator"
-      : role === "ADMIN"
-      ? "Administrator"
-      : "Labels";
 
   const labels = [
     { name: "Work", color: "bg-blue-500" },
@@ -189,10 +171,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
           </button>
         </div>
 
-        <button className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl shadow-lg">
+        {role === "USER" && <button onClick={onCompose} className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl shadow-lg">
           <Edit3 className="w-5 h-5" />
           <span className="font-medium">Compose</span>
-        </button>
+        </button>}
       </div>
 
       {/* Navigation */}
@@ -210,6 +192,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             />
           ))}
         </nav>
+
         {superAdminItems.length > 0 && (
           <div className="space-y-1">
             <h3 className="text-xs font-semibold text-gray-400 uppercase mt-6 mb-2">
@@ -228,49 +211,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             ))}
           </div>
         )}
-
-        {/* Labels */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-700">{labelTitle}</h3>
-            <button className="p-1 hover:bg-gray-100 rounded-full">
-              <Plus className="w-4 h-4 text-gray-500" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {labels.map(({ name, color }) => (
-              <div
-                key={name}
-                className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 rounded-lg"
-              >
-                <div className={`w-3 h-3 rounded-full ${color}`} />
-                <span className="text-sm text-gray-700">{name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
-      {/* Settings for admin/superadmin */}
-      {visibleLinks.some((i) => i.label === "Settings") && (
-        <div className="p-4 border-t border-gray-200">
-          <Link
-            to={getPath(
-              navItems.find((i) => i.label === "Settings"),
-              role
-            )}
-            className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <Settings className="w-4 h-4" />
-            <span className="text-sm">Settings</span>
-          </Link>
-        </div>
-      )}
+      {/* Footer (Settings + Logout + Profile) */}
+      <div className="p-4 border-t border-gray-200 space-y-2">
 
-      {/* Profile for user */}
-      {role === "USER" && (
-        <div className="p-4 border-t border-gray-200">
+        {role === "USER" && (
           <Link
             to="/u/profile"
             className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
@@ -279,23 +225,29 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }) {
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
           </Link>
-        </div>
-      )}
+        )}
+
+        <button
+          onClick={() => dispatch(logout())}
+          className="flex items-center cursor-pointer gap-3 w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+        >
+          <LogOut className="w-4 h-4" />
+          <span className="text-sm">Logout</span>
+        </button>
+      </div>
     </aside>
   );
 }
 
-/* Sidebar row */
 function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
   return (
     <Link
       to={path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
-        active
+      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${active
           ? "bg-violet-100 text-violet-700 border border-violet-200"
           : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-      }`}
+        }`}
     >
       <div className="flex items-center gap-3">
         {icon}
@@ -303,11 +255,10 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
       </div>
       {count !== undefined && (
         <span
-          className={`text-xs px-2 py-1 rounded-full ${
-            active
+          className={`text-xs px-2 py-1 rounded-full ${active
               ? "bg-violet-200 text-violet-800"
               : "bg-gray-100 text-gray-600"
-          }`}
+            }`}
         >
           {count}
         </span>

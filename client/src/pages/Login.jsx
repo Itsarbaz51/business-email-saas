@@ -64,6 +64,8 @@ export default function Login() {
       console.log(resultAction);
 
       const user = resultAction.data;
+      console.log(user);
+      
       // Redirect based on role
       switch (user.role.toUpperCase()) {
         case "ADMIN":

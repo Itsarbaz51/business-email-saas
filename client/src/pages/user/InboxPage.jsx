@@ -79,7 +79,7 @@ export default function InboxPage() {
                   </div>
                 </div>
 
-                <Link to={`/inbox/detail/${mail.id}`}>
+                <Link to={`/u/inbox/detail/${mail.id}`}>
                   <h4 className="text-gray-800 font-medium mb-2 hover:text-violet-600 transition-colors">
                     {mail.subject}
                   </h4>
