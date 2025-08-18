@@ -220,6 +220,8 @@ export default function EmailDetailsPage() {
               {/* Avatar */}
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl flex-shrink-0 shadow-lg">
                 {email.from.avatar}
+                {/* {console.log(email)} */}
+                
               </div>
 
               {/* Header Content */}

@@ -353,6 +353,27 @@ function DomainsPage() {
                                       </button>
                                     </div>
                                   </div>
+                                  <div>
+                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                                      TTL
+                                    </label>
+                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
+                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
+                                        {record.ttl}
+                                      </span>
+                                      <button
+                                        onClick={() => handleCopy(record.recordValue, `value-${record.id}`)}
+                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+                                        title="Copy to clipboard"
+                                      >
+                                        {copiedItem === `value-${record.id}` ? (
+                                          <Check size={14} className="text-green-600" />
+                                        ) : (
+                                          <Copy size={14} />
+                                        )}
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             ))}
