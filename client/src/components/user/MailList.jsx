@@ -8,6 +8,9 @@ import {
   Forward,
   Trash2,
 } from "lucide-react";
+import { useOutletContext } from "react-router-dom";
+import { useState } from "react";
+
 
 export default function MailList({
   mails = [],
@@ -15,6 +18,17 @@ export default function MailList({
   toggleSelect,
   handleTrash,
 }) {
+  const { openCompose } = useOutletContext();
+
+  const [viewedMails, setViewedMails] = useState([]);
+
+  const handleView = (id) => {
+    console.log(id);
+    
+    setViewedMails((prev) => [...prev, id]); // mark as viewed
+  };
+  console.log(viewedMails);
+  
   if (mails?.length === 0) {
     return (
       <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-12 text-center border border-white/20">
@@ -73,17 +87,15 @@ export default function MailList({
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
   };
-
   return (
     <div className="space-y-4">
       {mails?.map((mail) => (
         <div
           key={mail.id}
-          className={`group relative bg-white/70 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 ${
-            selectedMails.has(mail.id)
-              ? "border-blue-300 bg-blue-50/80 shadow-lg shadow-blue-100"
-              : "border-white/30 hover:border-blue-200"
-          }`}
+          className={`group relative bg-white/70 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 ${selectedMails.has(mail.id)
+            ? "border-blue-300 bg-blue-50/80 shadow-lg shadow-blue-100"
+            : "border-white/30 hover:border-blue-200"
+            }`}
         >
           {selectedMails.has(mail.id) && (
             <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-12 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full shadow-lg"></div>
@@ -124,19 +136,38 @@ export default function MailList({
                       ? `To: ${mail.toEmail}`
                       : `From: ${mail.fromEmail}`}
                   </h3>
-                  <span
-                    className={`px-3 py-1 text-xs font-medium rounded-full border ${getStatusColor(
-                      mail.status
-                    )}`}
-                  >
-                    {mail.status || "Unknown"}
-                  </span>
+                  {mail.status ? (
+                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100">
+                      {mail.status}
+                    </span>
+                  ) : !viewedMails.includes(mail.id) ? (
+                    <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
+                      New
+                    </span>
+                  ) : ""}
                 </div>
                 <div className="flex items-center gap-2 text-slate-500 text-sm">
                   <Clock className="w-4 h-4" />
-                  {mail?.sentAt
-                    ? new Date(mail.sentAt).toLocaleString()
-                    : "No date"}
+                  {mail?.sentAt || mail?.receivedAt ? (() => {
+                    const date = new Date(mail.sentAt || mail.receivedAt);
+                    const now = new Date();
+
+                    if (date.getFullYear() === now.getFullYear()) {
+                      // Show day + short month (e.g. 12 Jun)
+                      return date.toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                      });
+                    }
+
+                    // Show day + month + year (e.g. 12 Jun 2024)
+                    return date.toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    });
+                  })() : "No date"}
+
                 </div>
               </div>
 
@@ -149,22 +180,33 @@ export default function MailList({
               {/* Actions */}
               <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-100">
                 <div className="flex items-center gap-3">
-                  <Link
-                    to={`/u/inbox/detail/${mail.id}`}
-                    state={{ mailId: mail.id }}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all duration-200 text-sm font-medium"
+                  <div
+                    onClick={() => handleView(mail.id)}
+
                   >
-                    <Eye className="w-4 h-4" />
-                    View
-                  </Link>
+                    <Link
+                      to={`/u/inbox/detail/${mail.id}`}
+                      state={{ mailId: mail.id }}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all duration-200 text-sm font-medium"
+                    >
+                      <Eye className="w-4 h-4" />
+                      View
+                    </Link>
+                  </div>
                   {mail.deleted == false && (
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-all duration-200 text-sm font-medium">
+                    <button
+                      onClick={() => openCompose("reply", mail)}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-all duration-200 text-sm font-medium"
+                    >
                       <Reply className="w-4 h-4" />
                       Reply
                     </button>
                   )}
                   {mail.deleted == false && (
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-all duration-200 text-sm font-medium">
+                    <button
+                      onClick={() => openCompose("forward", mail)}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-600 rounded-lg hover:bg-slate-100 transition-all duration-200 text-sm font-medium"
+                    >
                       <Forward className="w-4 h-4" />
                       Forward
                     </button>
@@ -176,11 +218,10 @@ export default function MailList({
                     }}
                     disabled={mail.deleted === true}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                    ${
-                      mail.deleted
+                    ${mail.deleted
                         ? "cursor-not-allowed bg-red-400 text-white"
                         : "bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     <Trash2 className="w-4 h-4" />
                     {mail.deleted ? "Deleted" : "Delete"}

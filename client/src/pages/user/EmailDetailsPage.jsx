@@ -118,7 +118,7 @@ export default function EmailDetailsPage() {
         cc: [],
         subject: detailData.subject,
         date: detailData.sentAt,
-        body: `<iframe src="${detailData.body}" width="100%" height="600px" frameBorder="0" title="Email Body"></iframe>`,
+        body: `<iframe src="${detailData.body}" width="100%" height=auto frameBorder="0" title="Email Body"></iframe>`,
         attachments:
           detailData.attachments?.map((att) => ({
             id: att.id,

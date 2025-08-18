@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
 import { Send, Paperclip, Minimize2, Maximize2, X } from 'lucide-react';
@@ -8,18 +8,62 @@ import { senteMail } from '../../redux/slices/mailSlice';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 
-const SentEmailForm = ({ onClose, userEmail }) => {
+const SentEmailForm = ({ onClose, userEmail, initialData = {}, mode = "new" }) => {
     const [formData, setFormData] = useState({
-        from: userEmail || 'you@example.com',
-        to: '',
-        subject: '',
-        body: '',
+        from: userEmail || "you@example.com",
+        to: "",
+        subject: "",
+        body: "",
     });
     const [attachments, setAttachments] = useState([]);
     const [isMinimized, setIsMinimized] = useState(false);
 
     const dispatch = useDispatch();
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+
+    // Load email data (new / reply / forward)
+    useEffect(() => {
+        const loadBody = async () => {
+            let bodyContent = "";
+
+            // If bodyUrl is available (reply/forward), fetch from S3
+            if (initialData.body) {
+                try {
+                    const res = await fetch(initialData.body);
+                    const html = await res.text();
+                    console.log(html);
+                    console.log(res);
+                    
+
+                    if (mode === "reply") {
+                        bodyContent = `<p><br/></p><p>On ${initialData.date || ""}, ${initialData.from || "someone"} wrote:</p><blockquote>${html}</blockquote>`;
+                    } else if (mode === "forward") {
+                        bodyContent = `<p><br/></p><p>---------- Forwarded message ---------</p>
+                                       <p>From: ${initialData.from || ""}</p>
+                                       <p>Date: ${initialData.date || ""}</p>
+                                       <p>Subject: ${initialData.subject || ""}</p>
+                                       <p>To: ${initialData.to || ""}</p>
+                                       <blockquote>${html}</blockquote>`;
+                    } else {
+                        bodyContent = html;
+                    }
+                } catch (err) {
+                    console.error("Error fetching email body:", err);
+                }
+            } else {
+                bodyContent = initialData.body || "";
+            }
+
+            setFormData({
+                from: userEmail || "you@example.com",
+                to: mode === "reply" ? initialData.from || "" : (initialData.to || ""),
+                subject: mode === "forward" ? `Fwd: ${initialData.subject || ""}` : (mode === "reply" ? `Re: ${initialData.subject || ""}` : (initialData.subject || "")),
+                body: bodyContent,
+            });
+        };
+
+        loadBody();
+    }, [initialData, userEmail, mode]);
 
     const handleInputChange = (field, value) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -61,13 +105,15 @@ const SentEmailForm = ({ onClose, userEmail }) => {
             formPayload.append('attachments', att.file);
         });
 
-        const data = await dispatch(senteMail(formPayload))
-        console.log("send", data);
+        const data = await dispatch(senteMail(formPayload));
         if (data.success === true) {
-            setIsMinimized(true); 
+            toast.success("Email sent successfully!");
+            setIsMinimized(true);
+        } else {
+            toast.error("Failed to send email.");
         }
 
-        // Reset form
+        // Reset form after sending
         setFormData({ from: userEmail || 'you@example.com', to: '', subject: '', body: '' });
         setAttachments([]);
     };
@@ -108,7 +154,9 @@ const SentEmailForm = ({ onClose, userEmail }) => {
             <div className="bg-white border border-gray-300 rounded-lg shadow-2xl flex flex-col h-full">
                 {/* Header */}
                 <div className="drag-handle flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg cursor-move">
-                    <h3 className="text-lg font-semibold text-gray-800">New Message</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                        {mode === "reply" ? "Reply" : mode === "forward" ? "Forward" : "New Message"}
+                    </h3>
                     <div className="flex gap-2">
                         <button onClick={() => setIsMinimized(true)} className="text-gray-500 hover:text-gray-700 cursor-pointer">
                             <Minimize2 size={18} />
@@ -128,7 +176,7 @@ const SentEmailForm = ({ onClose, userEmail }) => {
                             type="email"
                             value={formData.from}
                             readOnly
-                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-blue-500 text-sm bg-gray-100"
+                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none text-sm bg-gray-100"
                         />
                     </div>
 
@@ -141,7 +189,7 @@ const SentEmailForm = ({ onClose, userEmail }) => {
                             onChange={e => handleInputChange('to', e.target.value)}
                             placeholder="recipient@example.com"
                             required
-                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none text-sm"
                         />
                     </div>
 
@@ -154,7 +202,7 @@ const SentEmailForm = ({ onClose, userEmail }) => {
                             onChange={e => handleInputChange('subject', e.target.value)}
                             placeholder="Email subject"
                             required
-                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+                            className="flex-1 px-3 py-2 border-0 border-b border-gray-300 focus:outline-none text-sm"
                         />
                     </div>
 
