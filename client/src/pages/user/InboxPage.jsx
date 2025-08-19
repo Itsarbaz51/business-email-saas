@@ -7,6 +7,7 @@ import {
 } from "../../redux/slices/mailSlice.js";
 import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
+import { useLocation } from "react-router-dom";
 
 export default function InboxPage() {
   usePageTitle("Inbox");
@@ -34,12 +35,14 @@ export default function InboxPage() {
     setSelectedMails(new Set()); // reset selection
   };
 
+  const currentPath = useLocation().pathname;
+
   const handleMoveTrash = () => {
     if (
       selectedMails.size > 0 &&
       confirm(`Delete ${selectedMails.size} selected emails?`)
     ) {
-      dispatch(moveToTrash([...selectedMails]));
+      dispatch(moveToTrash([...selectedMails, currentPath], currentPath));
       setSelectedMails(new Set());
     }
   };
@@ -70,6 +73,7 @@ export default function InboxPage() {
           mails={mails}
           selectedMails={selectedMails}
           toggleSelect={toggleSelect}
+          handleTrash={handleMoveTrash}
         />
       </div>
     </div>

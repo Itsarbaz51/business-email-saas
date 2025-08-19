@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { senteMail } from "../../redux/slices/mailSlice";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useLocation } from "react-router-dom";
 
 const SentEmailForm = ({
   onClose,
@@ -107,6 +108,8 @@ const SentEmailForm = ({
     return (bytes / Math.pow(k, i)).toFixed(2) + " " + sizes[i];
   };
 
+  const currentPath = useLocation().pathname;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formPayload = new FormData();
@@ -116,9 +119,8 @@ const SentEmailForm = ({
     formPayload.append("body", formData.body);
     attachments.forEach((att) => formPayload.append("attachments", att.file));
 
-    const data = await dispatch(senteMail(formPayload));
+    const data = await dispatch(senteMail(formPayload, currentPath));
     if (data.success) {
-      toast.success("Email sent successfully!");
       setIsMinimized(true);
     } else {
       toast.error("Failed to send email.");

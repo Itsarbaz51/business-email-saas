@@ -90,7 +90,7 @@ const navItems = [
     icon: <Settings className="w-5 h-5" />,
     label: "Settings",
     path: "/:role/settings",
-    roles: ["ADMIN", "SUPER_ADMIN", "USER"],
+    roles: ["ADMIN", "SUPER_ADMIN"],
   },
   {
     icon: <Shield className="w-5 h-5" />,
@@ -116,8 +116,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     }
   }, [dispatch, currentUser]);
 
-  const role =
-    currentUser?.role?.toUpperCase().replace(" ", "_") || null;
+  const role = currentUser?.role?.toUpperCase().replace(" ", "_") || null;
   const location = useLocation();
 
   if (!role) return null;
@@ -171,10 +170,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
           </button>
         </div>
 
-        {role === "USER" && <button onClick={onCompose} className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl shadow-lg">
-          <Edit3 className="w-5 h-5" />
-          <span className="font-medium">Compose</span>
-        </button>}
+        {role === "USER" && (
+          <button
+            onClick={onCompose}
+            className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl shadow-lg"
+          >
+            <Edit3 className="w-5 h-5" />
+            <span className="font-medium">Compose</span>
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -215,8 +219,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
 
       {/* Footer (Settings + Logout + Profile) */}
       <div className="p-4 border-t border-gray-200 space-y-2">
-
-        {/* {role === "USER" && (
+        {role === "USER" && (
           <Link
             to="/u/profile"
             className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
@@ -225,7 +228,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
           </Link>
-        )} */}
+        )}
 
         <button
           onClick={() => dispatch(logout())}
@@ -244,10 +247,11 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
     <Link
       to={path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${active
+      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+        active
           ? "bg-violet-100 text-violet-700 border border-violet-200"
           : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-        }`}
+      }`}
     >
       <div className="flex items-center gap-3">
         {icon}
@@ -255,10 +259,11 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
       </div>
       {count !== undefined && (
         <span
-          className={`text-xs px-2 py-1 rounded-full ${active
+          className={`text-xs px-2 py-1 rounded-full ${
+            active
               ? "bg-violet-200 text-violet-800"
               : "bg-gray-100 text-gray-600"
-            }`}
+          }`}
         >
           {count}
         </span>

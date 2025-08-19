@@ -4,7 +4,7 @@ import usePageTitle from "../../components/usePageTitle.js";
 import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { getTrash, deleteMails } from "../../redux/slices/mailSlice.js";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function TrashPage() {
   usePageTitle("Trash");
@@ -44,11 +44,12 @@ export default function TrashPage() {
   };
 
   const navigate = useNavigate();
+  const currentPath = useLocation().pathname;
 
   // Empty selected mails
   const handleEmptyTrash = () => {
     if (selectedMails.size === 0) return;
-    const data = dispatch(deleteMails([...selectedMails]));
+    const data = dispatch(deleteMails([...selectedMails, currentPath]));
     setSelectedMails(new Set());
     if (data) {
       navigate("/u/trash");

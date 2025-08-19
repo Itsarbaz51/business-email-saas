@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllSentMails, moveToTrash } from "../../redux/slices/mailSlice";
 import MailHeader from "../../components/user/MailHeader";
 import MailList from "../../components/user/MailList";
+import { useLocation } from "react-router-dom";
 
 export default function SentPage() {
   const dispatch = useDispatch();
@@ -42,13 +43,14 @@ export default function SentPage() {
     setRefreshKey((prev) => prev + 1);
   };
 
+  const currentPath = useLocation().pathname;
   // Move selected mails to trash
   const handleMoveTrash = () => {
     if (
       selectedMails.size > 0 &&
       confirm(`Delete ${selectedMails.size} selected emails?`)
     ) {
-      dispatch(moveToTrash([...selectedMails]));
+      dispatch(moveToTrash([...selectedMails], currentPath));
       setSelectedMails(new Set());
     }
   };

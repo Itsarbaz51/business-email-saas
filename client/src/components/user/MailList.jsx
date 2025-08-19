@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   CheckSquare,
   Square,
@@ -16,15 +16,11 @@ import { useDispatch } from "react-redux";
 import {
   addArchive,
   addStarred,
+  moveToTrash,
   removeStarred,
 } from "../../redux/slices/mailSlice";
 
-export default function MailList({
-  mails = [],
-  selectedMails,
-  toggleSelect,
-  handleTrash,
-}) {
+export default function MailList({ mails = [], selectedMails, toggleSelect }) {
   const { openCompose } = useOutletContext();
   const dispatch = useDispatch();
 
@@ -38,12 +34,21 @@ export default function MailList({
     dispatch(addArchive(mailId));
   };
 
+  const currentPath = useLocation().pathname;
   const handleStarred = (mailId, currentlyStarred) => {
     if (!currentlyStarred) {
-      dispatch(addStarred(mailId));
+      dispatch(addStarred(mailId, currentPath));
     } else {
       dispatch(removeStarred(mailId));
     }
+  };
+
+  const handleSingleDelete = (mailId) => {
+    if (!mailId) return;
+    if (!confirm("Delete this email?")) return;
+    dispatch(moveToTrash([mailId], currentPath));
+    // remove from selected if present
+    selectedMails.delete(mailId);
   };
 
   if (!mails || mails.length === 0) {
@@ -273,11 +278,8 @@ export default function MailList({
                     )}
 
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleTrash(mail.id);
-                      }}
-                      disabled={mail.deleted}
+                      onClick={() => handleSingleDelete(mail.id)}
+                      disabled={mail.deleted == true}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
                         ${
                           mail.deleted
@@ -286,7 +288,7 @@ export default function MailList({
                         }`}
                     >
                       <Trash2 className="w-4 h-4" />
-                      {mail.deleted ? "Deleted" : "Delete"}
+                      {mail.deleted == true ? "Deleted" : "Delete"}
                     </button>
                   </div>
 

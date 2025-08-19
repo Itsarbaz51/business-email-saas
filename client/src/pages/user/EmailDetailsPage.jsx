@@ -20,7 +20,7 @@ import {
   Bookmark,
   Eye,
 } from "lucide-react";
-
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,6 +32,7 @@ export default function EmailDetailsPage() {
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [showFullHeaders, setShowFullHeaders] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
+  const [bodyContent, setBodyContent] = useState("");
 
   const dispatch = useDispatch();
   const location = useLocation();
@@ -99,8 +100,30 @@ export default function EmailDetailsPage() {
   useEffect(() => {
     dispatch(getBySingleMail(mailId));
   }, [dispatch, mailId]);
+  useEffect(() => {
+    const fetchBody = async () => {
+      if (!detailData?.id) return;
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/mail/body/${
+            detailData.sentAt ? "SENT" : "RECEIVED"
+          }/${detailData.id}`
+        );
+        if (res.data?.data?.bodyUrl) {
+          const htmlRes = await fetch(res.data.data.bodyUrl);
+          const text = await htmlRes.text();
+          setBodyContent(text);
+        }
+      } catch (err) {
+        console.error("Error fetching email body:", err);
+        setBodyContent("<p>Unable to load email body.</p>");
+      }
+    };
 
-  // Map Redux data to UI structure
+    fetchBody();
+  }, [detailData]);
+
+  // Map Redux data + bodyContent to UI
   useEffect(() => {
     if (detailData) {
       setEmail({
@@ -118,14 +141,14 @@ export default function EmailDetailsPage() {
         cc: [],
         subject: detailData.subject,
         date: detailData.sentAt,
-        body: `<iframe src="${detailData.body}" width="100%" height=auto frameBorder="0" title="Email Body"></iframe>`,
+        body: bodyContent,
         attachments:
           detailData.attachments?.map((att) => ({
             id: att.id,
             name: att.fileName || "Attachment",
             size: att.size || "Unknown",
             type: att.mimeType || "application/octet-stream",
-            url: att.url || "#", // Optional if you store file URLs
+            url: att.url || "#",
           })) || [],
         isStarred: false,
         isLiked: false,
@@ -135,7 +158,7 @@ export default function EmailDetailsPage() {
         size: "1.2 MB",
       });
     }
-  }, [detailData]);
+  }, [detailData, bodyContent]);
 
   // Loading fallback
   if (!email) {
@@ -147,9 +170,7 @@ export default function EmailDetailsPage() {
   }
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-br from-gray-50 to-white"
-    >
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <div className="">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -173,10 +194,11 @@ export default function EmailDetailsPage() {
           <div className="hidden  sm:flex items-center gap-3">
             <button
               onClick={toggleRead}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${email.isRead
-                ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                : "bg-violet-600 text-white hover:bg-violet-700"
-                }`}
+              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${
+                email.isRead
+                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  : "bg-violet-600 text-white hover:bg-violet-700"
+              }`}
             >
               {email.isRead ? "Mark as Unread" : "Mark as Read"}
             </button>
@@ -221,7 +243,6 @@ export default function EmailDetailsPage() {
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl flex-shrink-0 shadow-lg">
                 {email.from.avatar}
                 {/* {console.log(email)} */}
-                
               </div>
 
               {/* Header Content */}
@@ -252,14 +273,16 @@ export default function EmailDetailsPage() {
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={toggleStar}
-                      className={`p-2 rounded-lg transition-colors ${email.isStarred
-                        ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                        }`}
+                      className={`p-2 rounded-lg transition-colors ${
+                        email.isStarred
+                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                      }`}
                     >
                       <Star
-                        className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""
-                          }`}
+                        className={`w-4 h-4 ${
+                          email.isStarred ? "fill-current" : ""
+                        }`}
                       />
                     </button>
                     <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm">
@@ -456,10 +479,11 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${email.isLiked
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${
+                  email.isLiked
+                    ? "bg-red-50 text-red-700 border-red-200"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -490,10 +514,11 @@ export default function EmailDetailsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleLike}
-                className={`p-2 rounded-lg transition-colors ${email.isLiked
-                  ? "bg-red-100 text-red-600"
-                  : "bg-gray-100 text-gray-600"
-                  }`}
+                className={`p-2 rounded-lg transition-colors ${
+                  email.isLiked
+                    ? "bg-red-100 text-red-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -501,10 +526,11 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleStar}
-                className={`p-2 rounded-lg transition-colors ${email.isStarred
-                  ? "bg-yellow-100 text-yellow-600"
-                  : "bg-gray-100 text-gray-600"
-                  }`}
+                className={`p-2 rounded-lg transition-colors ${
+                  email.isStarred
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
                 <Star
                   className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""}`}

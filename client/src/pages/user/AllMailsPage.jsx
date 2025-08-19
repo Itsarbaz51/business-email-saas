@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { getAllMails, moveToTrash } from "../../redux/slices/mailSlice.js";
+import { useLocation } from "react-router-dom";
 
 export default function AllMailsPage() {
   usePageTitle("All Mails");
@@ -44,10 +45,12 @@ export default function AllMailsPage() {
     setSelectedMails(new Set()); // reset selection
   };
 
+  const currentPath = useLocation().pathname;
+
   // Move selected mails to trash
   const handleMoveTrash = () => {
     if (selectedMails.size === 0) return;
-    dispatch(moveToTrash([...selectedMails])); // bulk move
+    dispatch(moveToTrash([...selectedMails], currentPath)); // bulk move
     setSelectedMails(new Set());
   };
 

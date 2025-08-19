@@ -48,7 +48,7 @@ export const router = createBrowserRouter(
           <Route path="starred" element={<StarredPage />} />
           <Route path="trash" element={<TrashPage />} />
           <Route path="archive" element={<ArchivePage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="profile" element={<SettingsPage />} />
 
           {/* detail pages  */}
           <Route path="inbox/detail/:id" element={<EmailDetailsPage />} />

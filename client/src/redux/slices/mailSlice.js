@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { refreshMailListByPath } from "../../utils/mailUtils";
 
 axios.defaults.withCredentials = true;
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -73,8 +74,6 @@ const mailSlice = createSlice({
     archiveMail: (state, action) => {
       state.isLoading = false;
       const archivedMailId = action.payload?.mailId;
-      console.log(archivedMailId);
-
       state.list = state.list.filter((mail) => mail.id !== archivedMailId);
       state.error = null;
     },
@@ -117,8 +116,6 @@ export const getAllMails = () => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.get(`${baseURL}/mail/get-all-mails`);
-    console.log(data);
-
     dispatch(getMailsSuccess(data.data || []));
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
@@ -126,13 +123,12 @@ export const getAllMails = () => async (dispatch) => {
   }
 };
 
-export const senteMail = (mailData) => async (dispatch) => {
+export const senteMail = (mailData, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.post(`${baseURL}/mail/sent-email`, mailData);
     dispatch(mailSuccess(data));
-    dispatch(getAllMails());
-    console.log(data);
+    refreshMailListByPath(dispatch, currentPath);
     return data;
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
@@ -164,47 +160,30 @@ export const getBySingleMail = (id) => async (dispatch) => {
   }
 };
 
-export const updateMail = (id, mailData) => async (dispatch) => {
-  try {
-    dispatch(mailRequest());
-    const { data } = await axios.put(
-      `${baseURL}/mails/update-mail/${id}`,
-      mailData
-    );
-    dispatch(mailSuccess(data));
-    dispatch(getAllMails());
-  } catch (err) {
-    const errMsg = err?.response?.data?.message || err?.message;
-    dispatch(mailFail(errMsg));
-  }
-};
-
-export const deleteMails = (idsOrId) => async (dispatch) => {
+export const deleteMails = (idsOrId, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
 
     if (Array.isArray(idsOrId)) {
-      // Bulk delete → send body via 'data' in axios config
       const { data } = await axios.delete(`${baseURL}/mail/bulk-delete-mail`, {
         data: { mailsId: idsOrId },
       });
       dispatch(mailDeleteSuccess(data));
     } else {
-      // Single delete → use URL param
       const { data } = await axios.delete(
         `${baseURL}/mail/delete-mail/${idsOrId}`
       );
       dispatch(mailDeleteSuccess(data));
     }
 
-    dispatch(getAllMails());
+    refreshMailListByPath(dispatch, currentPath);
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
     dispatch(mailFail(errMsg));
   }
 };
 
-export const moveToTrash = (idsOrId) => async (dispatch) => {
+export const moveToTrash = (idsOrId, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
 
@@ -213,10 +192,8 @@ export const moveToTrash = (idsOrId) => async (dispatch) => {
       : { mailId: idsOrId };
 
     const { data } = await axios.post(`${baseURL}/mail/move-to-trash`, payload);
-
     dispatch(mailTrashSuccess(data));
-    dispatch(getAllMails()); 
-
+    refreshMailListByPath(dispatch, currentPath);
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
     dispatch(mailFail(errMsg));
@@ -246,13 +223,14 @@ export const getAllReceivedMails = () => async (dispatch) => {
   }
 };
 
-export const addArchive = (mailId) => async (dispatch) => {
+export const addArchive = (mailId, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.post(`${baseURL}/mail/move-to-archive`, {
       mailId,
     });
     dispatch(archiveMail({ mailId }));
+    refreshMailListByPath(dispatch, currentPath);
     return data;
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
@@ -264,8 +242,6 @@ export const getAllArchive = () => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.get(`${baseURL}/mail/get-archive`);
-    console.log(data);
-
     dispatch(getArchiveMails(data.data));
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
@@ -273,38 +249,26 @@ export const getAllArchive = () => async (dispatch) => {
   }
 };
 
-export const addStarred = (mailId) => async (dispatch) => {
-  console.log(mailId);
-
+export const addStarred = (mailId, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.post(`${baseURL}/mail/add-starred/${mailId}`);
-    console.log(data);
     dispatch(addStarredSuccess(data.data));
-    dispatch(getAllMails());
-    dispatch(getAllReceivedMails());
-    dispatch(getAllSentMails());
-    dispatch(getAllArchive());
-    dispatch(getAllStarred());
+    refreshMailListByPath(dispatch, currentPath);
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
     dispatch(mailFail(errMsg));
   }
 };
 
-export const removeStarred = (mailId) => async (dispatch) => {
+export const removeStarred = (mailId, currentPath) => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.delete(
       `${baseURL}/mail/remove-starred/${mailId}`
     );
-    console.log(data);
     dispatch(addStarredSuccess(data.data));
-    dispatch(getAllMails());
-    dispatch(getAllReceivedMails());
-    dispatch(getAllSentMails());
-    dispatch(getAllArchive());
-    dispatch(getAllStarred());
+    refreshMailListByPath(dispatch, currentPath);
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
     dispatch(mailFail(errMsg));
@@ -315,7 +279,6 @@ export const getAllStarred = () => async (dispatch) => {
   try {
     dispatch(mailRequest());
     const { data } = await axios.get(`${baseURL}/mail/get-all-starred`);
-    console.log(data);
     dispatch(getAllStarredSuccess(data.data));
   } catch (err) {
     const errMsg = err?.response?.data?.message || err?.message;
