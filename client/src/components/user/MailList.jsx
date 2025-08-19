@@ -135,11 +135,10 @@ export default function MailList({ mails = [], selectedMails, toggleSelect }) {
         return (
           <div
             key={mail.id}
-            className={`group relative bg-white/70 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/50 hover:-translate-y-1 ${
-              selectedMails.has(mail.id)
-                ? "border-blue-300 bg-blue-50/80 shadow-lg shadow-blue-100"
-                : "border-white/30 hover:border-blue-200"
-            }`}
+            className={`relative bg-white/70 backdrop-blur-sm rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1  ${selectedMails.has(mail.id)
+              ? "border-purple-600 bg-blue-50/80"
+              : "border-purple-300 hover:border-purple-200"
+              }`}
           >
             {selectedMails.has(mail.id) && (
               <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-12 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full shadow-lg"></div>
@@ -173,63 +172,68 @@ export default function MailList({ mails = [], selectedMails, toggleSelect }) {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <h3 className="font-semibold text-slate-800 truncate">
-                      {mail.toEmail
-                        ? `To: ${mail.toEmail}`
-                        : `From: ${mail.fromEmail}`}
-                    </h3>
+                  <div className="flex items-center justify-between max-w-full min-w-5xl">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-slate-800 truncate">
+                        {mail.toEmail
+                          ? `To: ${mail.toEmail}`
+                          : `From: ${mail.fromEmail}`}
+                      </h3>
 
-                    {mail.status ? (
-                      <span
-                        className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
-                          mail.status
-                        )}`}
-                      >
-                        {mail.status}
-                      </span>
-                    ) : !viewedMails.includes(mail.id) ? (
-                      <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
-                        New
-                      </span>
-                    ) : null}
+                      {mail.status ? (
+                        <span
+                          className={`px-2 py-1 text-xs rounded-full ${getStatusColor(
+                            mail.status
+                          )}`}
+                        >
+                          {mail.status}
+                        </span>
+                      ) : !viewedMails.includes(mail.id) ? (
+                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
+                          New
+                        </span>
+                      ) : null}
+                    </div>
 
                     {/* Archive with tooltip */}
-                    <button
-                      disabled={mail.archive === true || mail.deleted === true}
-                      className={`group relative flex items-center gap-1 
-                      ${
-                        mail.archive === true || mail.deleted === true
-                          ? "cursor-not-allowed opacity-50"
-                          : "cursor-pointer"
-                      } `}
-                      onClick={() => handleArchive(mail.id)}
-                    >
-                      <Archive className="w-5 h-5 text-gray-600" />
-                      <span className="absolute left-full ml-2 hidden group-hover:inline-block bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        Archive
-                      </span>
-                    </button>
-                  </div>
-                  <button
-                    disabled={mail.deleted === true}
-                    className={`group relative flex items-center gap-1 ${
-                      mail.deleted === true
-                        ? "cursor-not-allowed opacity-50"
-                        : "cursor-pointer"
-                    }`}
-                    onClick={() => handleStarred(mail.id, mail.starred)}
-                  >
-                    {mail.starred ? (
-                      <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" /> // filled gold star
-                    ) : (
-                      <Star className="w-5 h-5 text-gray-500" /> // outlined gray star
-                    )}
+                    <div className="flex items-center gap-6 mr-2">
+                      <button
+                        disabled={mail.archive === true || mail.deleted === true}
+                        className={`group relative flex items-center flex-col gap-1 
+                      ${mail.archive === true || mail.deleted === true
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer"
+                          } `}
+                        onClick={() => handleArchive(mail.id)}
+                      >
+                        <Archive className="w-5 h-5 text-gray-600" />
+                        <span className="absolute top-8 hidden group-hover:block duration-300 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                          Archive
+                        </span>
+                      </button>
+                      <div>
+                        <button
+                          disabled={mail.deleted === true}
+                          className={`group relative flex items-center gap-1 flex-col  ${mail.deleted === true
+                            ? "cursor-not-allowed opacity-50"
+                            : "cursor-pointer"
+                            }`}
+                          onClick={() => handleStarred(mail.id, mail.starred)}
+                        >
+                          {mail.starred ? (
+                            <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" /> // filled gold star
+                          ) : (
+                            <Star className="w-5 h-5 text-gray-500" /> // outlined gray star
+                          )}
 
-                    <span className="absolute left-full ml-2 hidden group-hover:inline-block bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                      {mail.starred ? "Unstar" : "Star"}
-                    </span>
-                  </button>
+                          <span className="absolute top-8 hidden group-hover:block duration-300 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                            {mail.starred ? "Unstar" : "Star"}
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
 
                   <div className="flex items-center gap-2 text-slate-500 text-sm">
                     <Clock className="w-4 h-4" />
@@ -281,10 +285,9 @@ export default function MailList({ mails = [], selectedMails, toggleSelect }) {
                       onClick={() => handleSingleDelete(mail.id)}
                       disabled={mail.deleted == true}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                        ${
-                          mail.deleted
-                            ? "cursor-not-allowed bg-red-400 text-white"
-                            : "bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
+                        ${mail.deleted
+                          ? "cursor-not-allowed bg-red-400 text-white"
+                          : "bg-red-50 text-red-600 hover:bg-red-100 cursor-pointer"
                         }`}
                     >
                       <Trash2 className="w-4 h-4" />

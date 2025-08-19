@@ -14,6 +14,8 @@ export default function DashboardLayout() {
   const userEmail = useSelector(
     (state) => state.auth.currentUserData?.emailAddress
   );
+  const loading = useSelector((state) => state.mail.isLoading);
+
 
   const openCompose = (mode = "new", mail = null) => {
     setComposeMode(mode);
@@ -29,8 +31,11 @@ export default function DashboardLayout() {
         onCompose={() => openCompose("new")}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col ">
         <Navbar setSidebarOpen={setSidebarOpen} />
+        {loading && <div className="flex justify-center items-center duration- relative">
+          <span className="text-white z-10 absolute top-5 bg-purple-400 w-fit px-8 py-2 rounded text-xl">Loading...</span>
+        </div>}
         <main className="flex-1 p-6 h-fit sm:overflow-auto">
           <Outlet context={{ openCompose }} />
         </main>

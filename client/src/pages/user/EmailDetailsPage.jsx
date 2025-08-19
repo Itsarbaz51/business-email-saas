@@ -24,7 +24,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getBySingleMail } from "../../redux/slices/mailSlice";
+import { getBySingleMail, moveToTrash } from "../../redux/slices/mailSlice";
 import usePageTitle from "../../components/usePageTitle";
 
 export default function EmailDetailsPage() {
@@ -41,7 +41,7 @@ export default function EmailDetailsPage() {
 
   const detailData = useSelector((state) => state.mail.singleMail);
 
-  usePageTitle("email-view");
+  usePageTitle("Detail");
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -96,6 +96,23 @@ export default function EmailDetailsPage() {
     return "bg-gray-50 text-gray-700 border-gray-200";
   };
 
+  const formatFileSize = (bytes) => {
+    if (!bytes) return "0 B";
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  };
+
+  const sumAttachmentSizes = (attachments) => {
+    if (!attachments || attachments.length === 0) return "0 B";
+    const totalBytes = attachments.reduce(
+      (sum, att) => sum + (att.fileSize || 0),
+      0
+    );
+    return formatFileSize(totalBytes);
+  };
+
+
   // Fetch mail on mount
   useEffect(() => {
     dispatch(getBySingleMail(mailId));
@@ -105,8 +122,7 @@ export default function EmailDetailsPage() {
       if (!detailData?.id) return;
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/mail/body/${
-            detailData.sentAt ? "SENT" : "RECEIVED"
+          `${import.meta.env.VITE_API_BASE_URL}/mail/body/${detailData.sentAt ? "SENT" : "RECEIVED"
           }/${detailData.id}`
         );
         if (res.data?.data?.bodyUrl) {
@@ -138,7 +154,7 @@ export default function EmailDetailsPage() {
             email: detailData.toEmail,
           },
         ],
-        cc: [],
+        // cc: [],
         subject: detailData.subject,
         date: detailData.sentAt,
         body: bodyContent,
@@ -155,7 +171,7 @@ export default function EmailDetailsPage() {
         isRead: true,
         priority: "normal",
         tags: [],
-        size: "1.2 MB",
+        size: sumAttachmentSizes(detailData.attachments),
       });
     }
   }, [detailData, bodyContent]);
@@ -169,6 +185,16 @@ export default function EmailDetailsPage() {
     );
   }
 
+  console.log(email);
+  
+  const handleSingleDelete = (mailId) => {
+    if (!mailId) return console.log("erro");
+    // if (!confirm("Delete this email?")) return;
+    dispatch(moveToTrash([mailId]));
+    // remove from selected if present
+    // selectedMails.delete(mailId);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <div className="">
@@ -180,7 +206,7 @@ export default function EmailDetailsPage() {
               className="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-gray-900 transition-colors mb-2"
             >
               <ArrowLeft className="w-5 h-5" />
-              Back to Inbox
+
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Email Details
@@ -192,39 +218,30 @@ export default function EmailDetailsPage() {
 
           {/* Desktop Quick Actions */}
           <div className="hidden  sm:flex items-center gap-3">
-            <button
+            {/* <button
               onClick={toggleRead}
-              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${
-                email.isRead
+              className={`px-4 py-2 rounded-lg transition-all duration-200 shadow-sm text-sm font-medium ${email.isRead
                   ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   : "bg-violet-600 text-white hover:bg-violet-700"
-              }`}
+                }`}
             >
               {email.isRead ? "Mark as Unread" : "Mark as Read"}
-            </button>
+            </button> */}
             <div className="relative">
               <button
                 onClick={() => setShowMoreOptions((prev) => !prev)}
-                className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm text-sm font-medium"
+                className="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 shadow-sm text-sm font-medium cursor-pointer"
               >
                 More Actions
               </button>
               {showMoreOptions && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
                   <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors text-sm flex items-center gap-2">
-                    <Flag className="w-4 h-4" />
-                    Flag for Follow-up
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors text-sm flex items-center gap-2">
-                    <Bookmark className="w-4 h-4" />
-                    Add to Bookmarks
-                  </button>
-                  <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors text-sm flex items-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     Open in New Tab
                   </button>
                   <div className="border-t border-gray-100 my-1"></div>
-                  <button className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors text-sm flex items-center gap-2">
+                  <button onClick={() => handleSingleDelete(detailData.id)} className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors text-sm flex items-center gap-2">
                     <Trash2 className="w-4 h-4" />
                     Delete Email
                   </button>
@@ -273,16 +290,14 @@ export default function EmailDetailsPage() {
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={toggleStar}
-                      className={`p-2 rounded-lg transition-colors ${
-                        email.isStarred
-                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                      }`}
+                      className={`p-2 rounded-lg transition-colors ${email.isStarred
+                        ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                        }`}
                     >
                       <Star
-                        className={`w-4 h-4 ${
-                          email.isStarred ? "fill-current" : ""
-                        }`}
+                        className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""
+                          }`}
                       />
                     </button>
                     <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm">
@@ -330,7 +345,15 @@ export default function EmailDetailsPage() {
                   ))}
                 </div>
               </div>
-              {email.cc.length > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="text-gray-500 font-medium w-16 flex-shrink-0">
+                  Subject:
+                </span>
+                <span className="text-gray-700 break-all">
+                  {email.subject}
+                </span>
+              </div>
+              {/* {email.cc.length > 0 && (
                 <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
                   <span className="text-gray-500 font-medium w-16 flex-shrink-0">
                     Cc:
@@ -346,7 +369,7 @@ export default function EmailDetailsPage() {
                     ))}
                   </div>
                 </div>
-              )}
+              )} */}
               <button
                 onClick={() => setShowFullHeaders(!showFullHeaders)}
                 className="text-violet-600 hover:text-violet-800 text-sm flex items-center gap-1 font-medium group"
@@ -458,14 +481,11 @@ export default function EmailDetailsPage() {
           {/* Desktop Actions */}
           <div className="hidden sm:flex items-center justify-between p-4 sm:p-6 bg-gray-50 border-t border-gray-100">
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm">
+              <button className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium shadow-sm">
                 <Reply className="w-4 h-4" />
                 Reply
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-200">
-                <ReplyAll className="w-4 h-4" />
-                Reply All
-              </button>
+
               <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-200">
                 <Forward className="w-4 h-4" />
                 Forward
@@ -479,11 +499,10 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${
-                  email.isLiked
-                    ? "bg-red-50 text-red-700 border-red-200"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${email.isLiked
+                  ? "bg-red-50 text-red-700 border-red-200"
+                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -514,11 +533,10 @@ export default function EmailDetailsPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleLike}
-                className={`p-2 rounded-lg transition-colors ${
-                  email.isLiked
-                    ? "bg-red-100 text-red-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                className={`p-2 rounded-lg transition-colors ${email.isLiked
+                  ? "bg-red-100 text-red-600"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
               >
                 <Heart
                   className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
@@ -526,11 +544,10 @@ export default function EmailDetailsPage() {
               </button>
               <button
                 onClick={toggleStar}
-                className={`p-2 rounded-lg transition-colors ${
-                  email.isStarred
-                    ? "bg-yellow-100 text-yellow-600"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                className={`p-2 rounded-lg transition-colors ${email.isStarred
+                  ? "bg-yellow-100 text-yellow-600"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
               >
                 <Star
                   className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""}`}
@@ -541,10 +558,6 @@ export default function EmailDetailsPage() {
 
           {showMobileActions && (
             <div className="grid grid-cols-2 gap-2 mb-4 animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <button className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
-                <ReplyAll className="w-4 h-4" />
-                Reply All
-              </button>
               <button className="flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium">
                 <Forward className="w-4 h-4" />
                 Forward

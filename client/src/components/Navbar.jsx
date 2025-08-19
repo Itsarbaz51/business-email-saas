@@ -19,42 +19,6 @@ function Navbar({ setSidebarOpen }) {
         >
           <Menu className="w-6 h-6 text-black" />
         </button>
-
-        {/* Search toggle icon (mobile only) */}
-        <button
-          onClick={handleToggleSearch}
-          className="sm:hidden p-2 hover:bg-gray-100 rounded-lg"
-          aria-label="Toggle search"
-        >
-          <Search className="w-5 h-5 text-black" />
-        </button>
-
-        {/* Search bar (responsive + animated) */}
-        <div
-          className={`
-            flex items-center bg-gray-50 rounded-xl border border-gray-200
-            focus-within:border-violet-300 focus-within:bg-white
-            transition-all duration-300 ease-in-out overflow-hidden
-            sm:flex sm:max-w-md sm:px-4 sm:py-2.5 sm:opacity-100
-             w-full
-            ${
-              showSearch
-                ? "max-w-md px-4 py-2.5 opacity-100"
-                : "max-w-0 px-0 py-0 opacity-0 pointer-events-none"
-            }
-          `}
-        >
-          <Search className="w-5 h-5 text-gray-400 shrink-0" />
-          <input
-            type="text"
-            placeholder="Search conversations..."
-            className="bg-transparent outline-none px-3 text-sm w-full text-gray-700 placeholder-gray-400"
-          />
-          <div className="flex items-center gap-1 text-xs text-gray-400">
-            <Command className="w-3 h-3" />
-            <span>K</span>
-          </div>
-        </div>
       </div>
 
       {/* Right Section */}

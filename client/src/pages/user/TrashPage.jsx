@@ -5,11 +5,11 @@ import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { getTrash, deleteMails } from "../../redux/slices/mailSlice.js";
 import { useLocation, useNavigate } from "react-router-dom";
+import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
 
 export default function TrashPage() {
   usePageTitle("Trash");
   const dispatch = useDispatch();
-  const trashMails = useSelector((state) => state.mail.list || []);
 
   const [selectedMails, setSelectedMails] = useState(new Set());
   const [refreshKey, setRefreshKey] = useState(0);
@@ -17,6 +17,20 @@ export default function TrashPage() {
   useEffect(() => {
     dispatch(getTrash());
   }, [dispatch]);
+  const trashMails = useSelector((state) => state.mail.list || []);
+
+
+  const loading = useSelector((state) => state.mail?.isLoading);
+
+  const {
+    processedMails,
+    searchQuery,
+    setSearchQuery,
+    filterStatus,
+    setFilterStatus,
+    sortOrder,
+    setSortOrder,
+  } = useMailSearchFilter(trashMails);
 
   // Toggle single mail selection
   const toggleSelect = (mailId) => {
@@ -66,12 +80,19 @@ export default function TrashPage() {
         toggleSelectAll={toggleSelectAll}
         handleRefresh={handleRefresh}
         handleMoveTrash={handleEmptyTrash}
+        isLoading={loading}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
       />
 
       {/* Mail List */}
       <div key={refreshKey} className="space-y-4">
         <MailList
-          mails={trashMails}
+          mails={processedMails}
           selectedMails={selectedMails}
           toggleSelect={toggleSelect}
         />

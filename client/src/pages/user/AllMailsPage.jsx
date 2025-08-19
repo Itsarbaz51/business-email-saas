@@ -5,6 +5,7 @@ import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { getAllMails, moveToTrash } from "../../redux/slices/mailSlice.js";
 import { useLocation } from "react-router-dom";
+import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
 
 export default function AllMailsPage() {
   usePageTitle("All Mails");
@@ -13,6 +14,18 @@ export default function AllMailsPage() {
   const allMails = useSelector((state) =>
     Array.isArray(state.mail?.list) ? state.mail.list : []
   );
+
+  const loading = useSelector((state) => state.mail?.isLoading)
+
+  const {
+    processedMails,
+    searchQuery,
+    setSearchQuery,
+    filterStatus,
+    setFilterStatus,
+    sortOrder,
+    setSortOrder,
+  } = useMailSearchFilter(allMails);
 
   const [selectedMails, setSelectedMails] = useState(new Set());
 
@@ -64,12 +77,19 @@ export default function AllMailsPage() {
         toggleSelectAll={toggleSelectAll}
         handleRefresh={handleRefresh}
         handleMoveTrash={handleMoveTrash}
+        isLoading={loading}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
       />
 
       {/* Mail Cards */}
       <div className="space-y-4">
         <MailList
-          mails={allMails}
+          mails={processedMails}
           selectedMails={selectedMails}
           toggleSelect={toggleSelect}
         />

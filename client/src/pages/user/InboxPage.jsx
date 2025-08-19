@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
 import usePageTitle from "../../components/usePageTitle.js";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getAllReceivedMails,
-  moveToTrash,
-} from "../../redux/slices/mailSlice.js";
+import { getAllReceivedMails, moveToTrash } from "../../redux/slices/mailSlice.js";
 import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { useLocation } from "react-router-dom";
+import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
 
 export default function InboxPage() {
   usePageTitle("Inbox");
@@ -16,7 +14,18 @@ export default function InboxPage() {
   const mails = useSelector((state) =>
     Array.isArray(state.mail?.list) ? state.mail.list : []
   );
+  const loading = useSelector((state) => state.mail?.isLoading);
   const [selectedMails, setSelectedMails] = useState(new Set());
+
+  const {
+    processedMails,
+    searchQuery,
+    setSearchQuery,
+    filterStatus,
+    setFilterStatus,
+    sortOrder,
+    setSortOrder,
+  } = useMailSearchFilter(mails);
 
   useEffect(() => {
     dispatch(getAllReceivedMails());
@@ -32,7 +41,7 @@ export default function InboxPage() {
 
   const handleRefresh = () => {
     dispatch(getAllReceivedMails());
-    setSelectedMails(new Set()); // reset selection
+    setSelectedMails(new Set());
   };
 
   const currentPath = useLocation().pathname;
@@ -57,7 +66,6 @@ export default function InboxPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <MailHeader
         name="Inbox"
         mails={mails}
@@ -65,12 +73,18 @@ export default function InboxPage() {
         toggleSelectAll={toggleSelectAll}
         handleRefresh={handleRefresh}
         handleMoveTrash={handleMoveTrash}
+        isLoading={loading}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
       />
 
-      {/* Mail List */}
       <div className="space-y-4">
         <MailList
-          mails={mails}
+          mails={processedMails}
           selectedMails={selectedMails}
           toggleSelect={toggleSelect}
           handleTrash={handleMoveTrash}

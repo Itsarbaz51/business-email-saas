@@ -47,7 +47,6 @@ const navItems = [
     icon: <Star className="w-5 h-5" />,
     label: "Starred",
     path: "/:role/starred",
-    count: 3,
     roles: ["USER"],
   },
   {
