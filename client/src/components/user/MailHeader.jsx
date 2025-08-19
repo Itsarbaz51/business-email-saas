@@ -23,7 +23,7 @@ export default function MailHeader({
   const [showFilters, setShowFilters] = useState(false);
 
   // Filter + search
-  const filteredMails = mails.filter((mail) => {
+  const filteredMails = mails?.filter((mail) => {
     const matchesSearch =
       mail.toEmail?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       mail.subject?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -68,7 +68,7 @@ export default function MailHeader({
         <div className="flex items-center gap-3">
           <button
             onClick={handleRefresh}
-            className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 shadow-sm transition-all duration-200 hover:shadow-md"
+            className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 shadow-sm transition-all duration-200 hover:shadow-md"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
@@ -77,7 +77,7 @@ export default function MailHeader({
           {selectedMails.size > 0 && (
             <button
               onClick={handleMoveTrash}
-              className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm transition-all duration-200 hover:shadow-md"
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-xl shadow-sm transition-all duration-200 hover:shadow-md"
             >
               <Trash2 className="w-4 h-4" />
               Delete ({selectedMails.size})
@@ -103,7 +103,7 @@ export default function MailHeader({
           <div className="relative">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 ${
+              className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all duration-200 cursor-pointer ${
                 showFilters
                   ? "bg-blue-50 border-blue-200 text-blue-700"
                   : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
@@ -152,7 +152,7 @@ export default function MailHeader({
 
           <button
             onClick={toggleSelectAll}
-            className="flex items-center gap-2 px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 transition-all duration-200"
+            className="flex cursor-pointer items-center gap-2 px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 rounded-xl border border-slate-200 transition-all duration-200"
           >
             {selectedMails.size === sortedMails.length &&
             sortedMails.length > 0 ? (

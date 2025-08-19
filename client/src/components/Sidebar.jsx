@@ -90,7 +90,7 @@ const navItems = [
     icon: <Settings className="w-5 h-5" />,
     label: "Settings",
     path: "/:role/settings",
-    roles: ["ADMIN", "SUPER_ADMIN"],
+    roles: ["ADMIN", "SUPER_ADMIN", "USER"],
   },
   {
     icon: <Shield className="w-5 h-5" />,
@@ -216,7 +216,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
       {/* Footer (Settings + Logout + Profile) */}
       <div className="p-4 border-t border-gray-200 space-y-2">
 
-        {role === "USER" && (
+        {/* {role === "USER" && (
           <Link
             to="/u/profile"
             className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
@@ -225,7 +225,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
             <User className="w-4 h-4" />
             <span className="text-sm">Profile</span>
           </Link>
-        )}
+        )} */}
 
         <button
           onClick={() => dispatch(logout())}

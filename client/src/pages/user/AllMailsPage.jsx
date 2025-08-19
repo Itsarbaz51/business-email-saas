@@ -46,13 +46,9 @@ export default function AllMailsPage() {
 
   // Move selected mails to trash
   const handleMoveTrash = () => {
-    if (
-      selectedMails.size > 0 &&
-      confirm(`Delete ${selectedMails.size} selected emails?`)
-    ) {
-      dispatch(moveToTrash([...selectedMails]));
-      setSelectedMails(new Set());
-    }
+    if (selectedMails.size === 0) return;
+    dispatch(moveToTrash([...selectedMails])); // bulk move
+    setSelectedMails(new Set());
   };
 
   return (
