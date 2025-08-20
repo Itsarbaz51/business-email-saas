@@ -1,85 +1,127 @@
 import React, { useState } from "react";
-import { Mail, Menu, X } from "lucide-react";
-import { redirect, useLocation, useNavigate } from "react-router-dom";
+import { Mail, Menu, X, ArrowRight } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const RendererNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // const {    } = useSelector((state) => state.auth?.user)
   const navigate = useNavigate();
-
   const currentLocation = useLocation().pathname;
+
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm border-b border-gray-100 z-50">
-      {currentLocation === "/register" ? (
-        // Header register and login
-        <div className="sm:px-8 px-4 flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <div className="w-16 h-8 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 to-blue-500 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">Email</span>
+    <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200/50 z-50">
+      {currentLocation === "/login" ? (
+        // Login page header
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                MailFlow
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <button
+                onClick={() => navigate("/register")}
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 inline-flex items-center gap-1 group"
+              >
+                Sign Up
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </button>
             </div>
           </div>
-          <div className="text-sm text-gray-600">
-            Have a Email Account?{" "}
-            <button onClick={() => navigate('/login')} className="text-red-600 hover:text-red-700 font-medium cursor-pointer">
-              SIGN IN
-            </button>
+        </div>
+      ) : currentLocation === "/register" ? (
+        // Register page header
+        <div className="px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                MailFlow
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              Already have an account?{" "}
+              <button
+                onClick={() => navigate("/login")}
+                className="text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 inline-flex items-center gap-1 group"
+              >
+                Sign In
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </button>
+            </div>
           </div>
         </div>
       ) : (
-        currentLocation === '/' && <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        // Home page navigation
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+            <div
+              className="flex items-center space-x-3 cursor-pointer"
+              onClick={() => navigate("/")}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-200">
                 <Mail className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900">MailFlow</span>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                MailFlow
+              </span>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
+            <div className="hidden md:flex items-center space-x-1">
               <a
                 href="#features"
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 Features
               </a>
               <a
                 href="#pricing"
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 Pricing
               </a>
               <a
                 href="#about"
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 About
               </a>
               <a
                 href="#contact"
-                className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 Contact
               </a>
             </div>
 
             {/* Desktop CTA */}
-            <div className="hidden md:flex items-center space-x-4">
-              <div>
-                <button
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
-                >
-                  Sign In
-                </button>
-
-            
-              </div>
+            <div className="hidden md:flex items-center space-x-3">
               <button
-                onClick={() => redirect("register")}
-                className="cursor-pointer bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
+                onClick={() => navigate("/login")}
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 inline-flex items-center gap-2 group"
               >
                 Get Started
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             </div>
 
@@ -89,47 +131,54 @@ const RendererNavbar = () => {
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
             >
               {isMenuOpen ? (
-                <X className="w-6 h-6" />
+                <X className="w-6 h-6 text-gray-700" />
               ) : (
-                <Menu className="w-6 h-6" />
+                <Menu className="w-6 h-6 text-gray-700" />
               )}
             </button>
           </div>
 
           {/* Mobile Menu */}
           {isMenuOpen && (
-            <div className="md:hidden py-4 border-t border-gray-100">
-              <div className="flex flex-col space-y-4">
+            <div className="md:hidden py-4 border-t border-gray-200/50 bg-white/95 backdrop-blur-sm">
+              <div className="flex flex-col space-y-1">
                 <a
                   href="#features"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
                 >
                   Features
                 </a>
                 <a
                   href="#pricing"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
                 >
                   Pricing
                 </a>
                 <a
                   href="#about"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
                 >
                   About
                 </a>
                 <a
                   href="#contact"
-                  className="text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200"
+                  className="px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
                 >
                   Contact
                 </a>
-                <div className="pt-4 border-t border-gray-100">
-                  <button className="w-full text-left text-gray-600 hover:text-blue-600 font-medium transition-colors duration-200 mb-3">
+                <div className="pt-4 border-t border-gray-200/50 space-y-2">
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="w-full text-left px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
+                  >
                     Sign In
                   </button>
-                  <button className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
+                  <button
+                    onClick={() => navigate("/register")}
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg inline-flex items-center justify-center gap-2 group"
+                  >
                     Get Started
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
                   </button>
                 </div>
               </div>

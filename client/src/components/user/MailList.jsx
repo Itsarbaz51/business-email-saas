@@ -35,6 +35,7 @@ export default function MailList({ mails = [], selectedMails, toggleSelect }) {
   };
 
   const currentPath = useLocation().pathname;
+  
   const handleStarred = (mailId, currentlyStarred) => {
     if (!currentlyStarred) {
       dispatch(addStarred(mailId, currentPath));

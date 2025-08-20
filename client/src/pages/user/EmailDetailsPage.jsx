@@ -1,13 +1,11 @@
 import {
   ArrowLeft,
   Reply,
-  ReplyAll,
   Forward,
   Trash2,
   Archive,
   Star,
   Heart,
-  MoreHorizontal,
   Paperclip,
   Download,
   Clock,
@@ -16,15 +14,18 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
-  Flag,
-  Bookmark,
-  Eye,
 } from "lucide-react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getBySingleMail, moveToTrash } from "../../redux/slices/mailSlice";
+import {
+  addArchive,
+  addStarred,
+  getBySingleMail,
+  moveToTrash,
+  removeStarred,
+} from "../../redux/slices/mailSlice";
 import usePageTitle from "../../components/usePageTitle";
 
 export default function EmailDetailsPage() {
@@ -33,6 +34,7 @@ export default function EmailDetailsPage() {
   const [showFullHeaders, setShowFullHeaders] = useState(false);
   const [showMobileActions, setShowMobileActions] = useState(false);
   const [bodyContent, setBodyContent] = useState("");
+  const [attachmentFetch, setAttachmentFetch] = useState([]);
 
   const dispatch = useDispatch();
   const location = useLocation();
@@ -65,18 +67,53 @@ export default function EmailDetailsPage() {
     });
   };
 
-  const toggleStar = () =>
-    setEmail((prev) => ({ ...prev, isStarred: !prev.isStarred }));
-  const toggleLike = () =>
-    setEmail((prev) => ({ ...prev, isLiked: !prev.isLiked }));
   const toggleRead = () =>
     setEmail((prev) => ({ ...prev, isRead: !prev.isRead }));
 
-  const downloadAttachment = (attachment) => {
-    if (attachment?.url) {
-      window.open(attachment.url, "_blank");
-    } else {
+  const downloadAttachment = async (attachment) => {
+    if (!attachment?.url) {
       alert("No download URL available.");
+      return;
+    }
+
+    try {
+      const response = await fetch(attachment.url);
+      const blob = await response.blob();
+
+      const mime = blob.type;
+      let ext = "";
+
+      const mimeMap = {
+        "image/png": ".png",
+        "image/jpeg": ".jpg",
+        "image/webp": ".webp",
+        "application/pdf": ".pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+          ".docx",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+          ".xlsx",
+      };
+
+      if (mimeMap[mime]) {
+        ext = mimeMap[mime];
+      }
+
+      let fileName = attachment.name || "download";
+      if (!fileName.includes(".") && ext) {
+        fileName += ext;
+      }
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Download failed:", err);
+      alert("Unable to download file.");
     }
   };
 
@@ -112,23 +149,26 @@ export default function EmailDetailsPage() {
     return formatFileSize(totalBytes);
   };
 
-
-  // Fetch mail on mount
   useEffect(() => {
     dispatch(getBySingleMail(mailId));
   }, [dispatch, mailId]);
+
   useEffect(() => {
     const fetchBody = async () => {
       if (!detailData?.id) return;
       try {
         const res = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/mail/body/${detailData.sentAt ? "SENT" : "RECEIVED"
+          `${import.meta.env.VITE_API_BASE_URL}/mail/body/${
+            detailData.sentAt ? "SENT" : "RECEIVED"
           }/${detailData.id}`
         );
         if (res.data?.data?.bodyUrl) {
           const htmlRes = await fetch(res.data.data.bodyUrl);
           const text = await htmlRes.text();
           setBodyContent(text);
+        }
+        if (res.data?.data?.attachments) {
+          setAttachmentFetch(res.data.data.attachments);
         }
       } catch (err) {
         console.error("Error fetching email body:", err);
@@ -139,10 +179,10 @@ export default function EmailDetailsPage() {
     fetchBody();
   }, [detailData]);
 
-  // Map Redux data + bodyContent to UI
   useEffect(() => {
     if (detailData) {
       setEmail({
+        id: detailData.id,
         from: {
           name: detailData.sender?.name || "",
           email: detailData.sender?.emailAddress || "",
@@ -154,29 +194,26 @@ export default function EmailDetailsPage() {
             email: detailData.toEmail,
           },
         ],
-        // cc: [],
         subject: detailData.subject,
         date: detailData.sentAt,
         body: bodyContent,
         attachments:
-          detailData.attachments?.map((att) => ({
+          attachmentFetch?.map((att) => ({
             id: att.id,
             name: att.fileName || "Attachment",
-            size: att.size || "Unknown",
+            size: formatFileSize(att.fileSize),
             type: att.mimeType || "application/octet-stream",
             url: att.url || "#",
           })) || [],
-        isStarred: false,
-        isLiked: false,
+        isStarred: detailData.starred,
         isRead: true,
-        priority: "normal",
-        tags: [],
+        isArchive: detailData.archive,
         size: sumAttachmentSizes(detailData.attachments),
       });
+      console.log(detailData);
     }
-  }, [detailData, bodyContent]);
+  }, [detailData, bodyContent, attachmentFetch]);
 
-  // Loading fallback
   if (!email) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
@@ -185,14 +222,24 @@ export default function EmailDetailsPage() {
     );
   }
 
-  console.log(email);
-  
+  const handleStarred = (mailId, isStarred) => {
+    if (!isStarred) {
+      dispatch(addStarred(mailId));
+    } else {
+      dispatch(removeStarred(mailId));
+    }
+    setEmail((prev) => ({
+      ...prev,
+      isStarred: !isStarred,
+    }));
+  };
   const handleSingleDelete = (mailId) => {
-    if (!mailId) return console.log("erro");
-    // if (!confirm("Delete this email?")) return;
     dispatch(moveToTrash([mailId]));
-    // remove from selected if present
-    // selectedMails.delete(mailId);
+    navigate(-1); 
+  };
+
+  const handleArchive = (mailId) => {
+    dispatch(addArchive(mailId));
   };
 
   return (
@@ -206,7 +253,6 @@ export default function EmailDetailsPage() {
               className="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-gray-900 transition-colors mb-2"
             >
               <ArrowLeft className="w-5 h-5" />
-
             </button>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
               Email Details
@@ -236,12 +282,21 @@ export default function EmailDetailsPage() {
               </button>
               {showMoreOptions && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <button className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors text-sm flex items-center gap-2">
+                  {/* <button
+                    onClick={() =>
+                      window.open(`/u/${folder}/detail/${email.id}`, "_blank", "noopener,noreferrer")
+
+                    }
+                    className="w-full px-4 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors text-sm flex items-center gap-2"
+                  >
                     <ExternalLink className="w-4 h-4" />
                     Open in New Tab
-                  </button>
+                  </button> */}
                   <div className="border-t border-gray-100 my-1"></div>
-                  <button onClick={() => handleSingleDelete(detailData.id)} className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors text-sm flex items-center gap-2">
+                  <button
+                    onClick={() => handleSingleDelete(detailData.id)}
+                    className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors text-sm flex items-center gap-2"
+                  >
                     <Trash2 className="w-4 h-4" />
                     Delete Email
                   </button>
@@ -259,7 +314,6 @@ export default function EmailDetailsPage() {
               {/* Avatar */}
               <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-violet-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg sm:text-xl flex-shrink-0 shadow-lg">
                 {email.from.avatar}
-                {/* {console.log(email)} */}
               </div>
 
               {/* Header Content */}
@@ -269,37 +323,24 @@ export default function EmailDetailsPage() {
                     <h3 className="font-semibold text-gray-900 text-base sm:text-lg mb-2">
                       {email.from.name}
                     </h3>
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      {email.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="px-3 py-1 bg-violet-100 text-violet-700 text-xs font-medium rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {email.priority === "high" && (
-                        <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-full flex items-center gap-1">
-                          <AlertTriangle className="w-3 h-3" />
-                          High Priority
-                        </span>
-                      )}
-                    </div>
                   </div>
 
                   <div className="flex items-center gap-2 ml-4">
                     <button
-                      onClick={toggleStar}
-                      className={`p-2 rounded-lg transition-colors ${email.isStarred
-                        ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                        : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                        }`}
+                      onClick={() => handleStarred(email.id, email.isStarred)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        email.isStarred
+                          ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
+                          : "bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                      }`}
                     >
                       <Star
-                        className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""
-                          }`}
+                        className={`w-4 h-4 ${
+                          email.isStarred ? "fill-current" : ""
+                        }`}
                       />
                     </button>
+
                     <div className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm">
                       <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span className="sm:hidden">
@@ -349,9 +390,7 @@ export default function EmailDetailsPage() {
                 <span className="text-gray-500 font-medium w-16 flex-shrink-0">
                   Subject:
                 </span>
-                <span className="text-gray-700 break-all">
-                  {email.subject}
-                </span>
+                <span className="text-gray-700 break-all">{email.subject}</span>
               </div>
               {/* {email.cc.length > 0 && (
                 <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-2">
@@ -459,10 +498,10 @@ export default function EmailDetailsPage() {
                     </div>
                     <button
                       onClick={() => downloadAttachment(attachment)}
-                      className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white/80 backdrop-blur-sm rounded-lg hover:bg-white transition-colors text-sm font-medium"
+                      className="flex items-center gap-2 text-blue-600 hover:underline text-sm font-medium"
                     >
                       <Download className="w-4 h-4" />
-                      Download
+                      Download Attachment
                     </button>
                   </div>
                 ))}
@@ -493,22 +532,19 @@ export default function EmailDetailsPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-200">
-                <Archive className="w-4 h-4" />
-                Archive
-              </button>
-              <button
-                onClick={toggleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors text-sm font-medium border ${email.isLiked
-                  ? "bg-red-50 text-red-700 border-red-200"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
+              <span
+                disabled={email.isArchive}
+                className={`flex items-center gap-2 px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium border border-gray-200 ${
+                  email.isArchive == true
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                onClick={() => handleArchive(email.id)}
               >
-                <Heart
-                  className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
-                />
-                {email.isLiked ? "Liked" : "Like"}
-              </button>
+                <Archive className="w-4 h-4" />
+                {email.isArchive == true ? "Archived" : "Archive"}
+              </span>
+
               <div className="text-xs text-gray-500 px-2">{email.size}</div>
             </div>
           </div>
@@ -532,22 +568,12 @@ export default function EmailDetailsPage() {
             </button>
             <div className="flex items-center gap-2">
               <button
-                onClick={toggleLike}
-                className={`p-2 rounded-lg transition-colors ${email.isLiked
-                  ? "bg-red-100 text-red-600"
-                  : "bg-gray-100 text-gray-600"
-                  }`}
-              >
-                <Heart
-                  className={`w-4 h-4 ${email.isLiked ? "fill-current" : ""}`}
-                />
-              </button>
-              <button
-                onClick={toggleStar}
-                className={`p-2 rounded-lg transition-colors ${email.isStarred
-                  ? "bg-yellow-100 text-yellow-600"
-                  : "bg-gray-100 text-gray-600"
-                  }`}
+                onClick={() => handleStarred(email.id, email.isStarred)}
+                className={`p-2 rounded-lg transition-colors ${
+                  email.isStarred
+                    ? "bg-yellow-100 text-yellow-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
                 <Star
                   className={`w-4 h-4 ${email.isStarred ? "fill-current" : ""}`}

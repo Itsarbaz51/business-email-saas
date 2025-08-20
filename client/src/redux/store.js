@@ -4,6 +4,7 @@ import subscribeReducer from "./slices/subscriptionSlice.js";
 import domainReducer from "./slices/domainSlice.js";
 import mailboxReducer from "./slices/mailboxSlice.js";
 import mailReducer from "./slices/mailSlice.js";
+import dashboardReducer from "./slices/dashboardSlice.js";
 import statsReducer from "./slices/statsSlice.js";
 
 const store = configureStore({
@@ -13,6 +14,7 @@ const store = configureStore({
     domain: domainReducer,
     mailbox: mailboxReducer,
     mail: mailReducer,
+    dashboard: dashboardReducer,
     stats: statsReducer,
   },
 });

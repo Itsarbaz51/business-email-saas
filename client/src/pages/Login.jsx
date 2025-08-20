@@ -10,7 +10,6 @@ export default function Login() {
     emailOrPhone: "",
     password: "",
   });
-
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -40,15 +39,11 @@ export default function Login() {
 
   const validate = () => {
     const newErrors = {};
-
-    if (!formData.emailOrPhone.trim()) {
+    if (!formData.emailOrPhone.trim())
       newErrors.emailOrPhone = "Email or phone is required.";
-    }
-    if (!formData.password.trim()) {
-      newErrors.password = "Password is required.";
-    } else if (formData.password.length < 6) {
+    if (!formData.password.trim()) newErrors.password = "Password is required.";
+    else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters.";
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -61,12 +56,8 @@ export default function Login() {
     setLoading(true);
     try {
       const resultAction = await dispatch(login(formData));
-      console.log(resultAction);
-
       const user = resultAction.data;
-      console.log(user);
-      
-      // Redirect based on role
+
       switch (user.role.toUpperCase()) {
         case "ADMIN":
         case "SUPER_ADMIN":
@@ -86,13 +77,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 -my-8">
-      <div className="max-w-md w-full">
-        <div className="bg-white rounded-lg shadow-lg p-8 space-y-6">
-          {/* Title */}
+    <div className="flex items-center justify-center sm:my-56 my-20 h-fit px-4 sm:px-0">
+      <div className="max-w-md w-full -py-32">
+        <div className="bg-white rounded-2xl p-10 space-y-6">
+          {/* Logo & Title */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-normal text-gray-900">Sign in</h1>
-            <p className="text-gray-600 text-sm">to access Email Home</p>
+            <h1 className="text-3xl font-bold text-gray-900">Welcome Back</h1>
+            <p className="text-gray-600 text-sm">
+              Sign in to your MailFlow account
+            </p>
           </div>
 
           {/* Form */}
@@ -102,11 +95,10 @@ export default function Login() {
               name="emailOrPhone"
               value={formData.emailOrPhone}
               onChange={handleInputChange}
-              placeholder="Email address or mobile number"
+              placeholder="Email or mobile number"
               autoComplete="username"
               error={errors.emailOrPhone}
             />
-
             <InputField
               type="password"
               name="password"
@@ -116,17 +108,21 @@ export default function Login() {
               autoComplete="current-password"
               error={errors.password}
             />
-
-            <ButtonField type="submit" submitLabel="Login" loading={loading} />
+            <ButtonField
+              type="submit"
+              submitLabel="Login"
+              loading={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            />
           </form>
 
           {/* Sign up link */}
-          <div className="text-center text-sm text-gray-600 pt-4">
+          <div className="text-center text-gray-600 text-sm pt-4">
             Don't have an account?{" "}
             <button
               type="button"
               onClick={() => navigate("/register")}
-              className="cursor-pointer text-blue-600 hover:text-blue-800 font-medium"
+              className="text-blue-600 hover:text-blue-800 font-medium"
             >
               Sign up now
             </button>

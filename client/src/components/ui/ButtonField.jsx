@@ -9,7 +9,7 @@ function ButtonField({ onSubmit, onClose, submitLabel, closeLabel, loading }) {
       {onClose && closeLabel && (
         <button
           onClick={onClose}
-          className={`${baseClass} bg-gray-100 hover:bg-gray-200 focus:ring-gray-400`}
+          className={`${baseClass} `}
           disabled={loading}
         >
           {loading ? `${submitLabel}...` : closeLabel}
@@ -17,7 +17,7 @@ function ButtonField({ onSubmit, onClose, submitLabel, closeLabel, loading }) {
       )}
       <button
         onClick={onSubmit}
-        className={`${baseClass} bg-red-600 hover:bg-red-700 focus:ring-red-500`}
+        className={`${baseClass} bg-blue-600 hover:bg-blue-700 text-white font-semibold `}
         disabled={loading}
       >
         {loading ? `${submitLabel}...` : submitLabel}
