@@ -84,7 +84,7 @@ export const addDomain = (domainName) => async (dispatch) => {
 export const verifyDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
-        const { data } = await axios.get(`${baseURL}/domain/verify-domian/${domainName}`);
+        const { data } = await axios.get(`${baseURL}/domain/verify-domain/${domainName}`);
         dispatch(domainSuccess(data));
         dispatch(fetchDomains());
     } catch (err) {

@@ -28,7 +28,9 @@ const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(getAlldashboardData());
+    if (!dashboardData) {
+      dispatch(getAlldashboardData());
+    }
   }, [dispatch]);
 
   const formatDate = (dateString) => {
@@ -140,13 +142,12 @@ const Dashboard = () => {
       </div>
       <div className="flex items-center space-x-3">
         <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-            domain.status === "VERIFIED"
-              ? "bg-green-100 text-green-800 border-green-200"
-              : domain.status === "PENDING"
+          className={`px-3 py-1 rounded-full text-xs font-semibold border ${domain.status === "VERIFIED"
+            ? "bg-green-100 text-green-800 border-green-200"
+            : domain.status === "PENDING"
               ? "bg-yellow-100 text-yellow-800 border-yellow-200"
               : "bg-gray-100 text-gray-800 border-gray-200"
-          }`}
+            }`}
         >
           {domain.status}
         </span>
@@ -217,20 +218,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-3 bg-white rounded-xl shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-        >
-          {sidebarOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <Menu className="h-5 w-5" />
-          )}
-        </button>
-      </div>
-
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -301,7 +288,7 @@ const Dashboard = () => {
           <StatCard
             icon={HardDrive}
             title="Storage Used"
-            value={formatBytes(dashboardData.storageUsed)}
+            value={formatBytes(dashboardData.storageUsed || 0)}
             subtitle="Total attachment storage"
             color="indigo"
             isLoading={loading}

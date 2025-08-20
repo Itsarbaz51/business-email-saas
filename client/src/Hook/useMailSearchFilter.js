@@ -1,11 +1,5 @@
 import { useState, useMemo } from "react";
 
-/**
- * Custom hook to handle searching, filtering & sorting mails
- *
- * @param {Array} mails - original mail list
- * @returns {Object} { processedMails, searchQuery, setSearchQuery, filterStatus, setFilterStatus, sortOrder, setSortOrder }
- */
 export default function useMailSearchFilter(mails = []) {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("ALL");

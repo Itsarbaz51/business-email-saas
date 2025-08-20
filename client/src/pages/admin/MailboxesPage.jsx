@@ -33,17 +33,21 @@ function MailboxesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [editMailbox, setEditMailbox] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  useEffect(() => {
-    dispatch(fetchDomains());
-  }, [dispatch]);
-
-  useEffect(() => {
-    dispatch(fetchMailboxes());
-  }, [dispatch]);
-
   const mailboxes = useSelector((state) => state.mailbox?.list || []);
   const { domains } = useSelector((state) => state.domain);
+
+  useEffect(() => {
+    if (!domains) {
+      dispatch(fetchDomains());
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    // if (!mailboxes) {
+      dispatch(fetchMailboxes());
+    // }
+  }, [dispatch]);
+
 
   // Create / Update mailbox
   const handleSaveMailbox = (formData) => {

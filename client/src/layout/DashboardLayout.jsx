@@ -51,19 +51,6 @@ export default function DashboardLayout() {
             mode={composeMode}
           />
         )}
-        <footer className="bg-gray-100 border-t border-gray-300 py-4 text-center text-gray-700 text-sm flex flex-col sm:flex-row justify-center items-center gap-2">
-          <span>
-            Developed by{" "}
-            <strong
-              className="cursor-pointer hover:text-gray-800 duration-300"
-              onClick={() => window.open("https://azzunique.com", "_blank")}
-            >
-              Azzunique Software Pvt. Ltd.
-            </strong>
-          </span>
-          <span>•</span>
-          <span>&copy; {new Date().getFullYear()}</span>
-        </footer>
       </div>
     </div>
   );

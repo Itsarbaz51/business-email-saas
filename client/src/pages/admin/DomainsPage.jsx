@@ -14,12 +14,12 @@ function DomainsPage() {
   const [expandedDomains, setExpandedDomains] = useState(new Set());
   const [isVerifying, setIsVerifying] = useState({});
   const [verificationTimer, setVerificationTimer] = useState({});
+  const [verificationError, setVerificationError] = useState({});
 
+  const domains = useSelector((state) => state.domain.domains || []);
   useEffect(() => {
     dispatch(fetchDomains());
   }, [dispatch]);
-
-  const domains = useSelector((state) => state.domain.domains || []);
 
   const handleAddDomain = (data) => {
     if (editDomainData) {
@@ -31,16 +31,37 @@ function DomainsPage() {
     setEditDomainData(null);
   };
 
-  const verifyDnsHandler = (domainName, domainId) => {
+  const verifyDnsHandler = async (domainName, domainId) => {
     setIsVerifying(prev => ({ ...prev, [domainId]: true }));
+    setVerificationError(prev => ({ ...prev, [domainId]: null }));
+
     const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
     setVerificationTimer(prev => ({ ...prev, [domainId]: expiryTime }));
 
-    dispatch(verifyDomain(domainName))
-      .unwrap()
-      .finally(() => {
-        setIsVerifying(prev => ({ ...prev, [domainId]: false }));
-      });
+    try {
+      const result = await dispatch(verifyDomain(domainName));
+
+      if (result && result.success) {
+        // Verification succeeded
+        console.log(`Domain ${domainName} verified successfully`);
+      } else {
+        // Verification failed but API call succeeded
+        setVerificationError(prev => ({
+          ...prev,
+          [domainId]: result?.message || "Domain verification failed"
+        }));
+      }
+    } catch (error) {
+      // API call failed
+      console.error("Verification error:", error);
+      setVerificationError(prev => ({
+        ...prev,
+        [domainId]: error.message || "Verification request failed"
+      }));
+    } finally {
+      // Always stop the loader, regardless of success/failure
+      setIsVerifying(prev => ({ ...prev, [domainId]: false }));
+    }
   };
 
   const isWithin24h = (domainId) => {
@@ -74,8 +95,6 @@ function DomainsPage() {
     return { isVerified: allVerified, hasRecords: true };
   };
 
-
-  // inside DomainsPage component
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleDeleteConfirm = () => {
@@ -84,7 +103,6 @@ function DomainsPage() {
       setDeleteTarget(null);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
@@ -166,6 +184,7 @@ function DomainsPage() {
               const verificationStatus = getDomainVerificationStatus(domain);
               const isVerifyingDomain = isVerifying[domain.id];
               const isPending = isWithin24h(domain.id);
+              const errorMessage = verificationError[domain.id];
 
               return (
                 <div key={domain.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
@@ -223,6 +242,13 @@ function DomainsPage() {
                             )}
                           </div>
                         </div>
+
+                        {/* Error Message */}
+                        {errorMessage && (
+                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                            <p className="text-xs text-red-600">{errorMessage}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -251,7 +277,6 @@ function DomainsPage() {
                         onClose={() => setDeleteTarget(null)}
                         onConfirm={handleDeleteConfirm}
                       />
-
                     </div>
                   </div>
 
@@ -362,11 +387,11 @@ function DomainsPage() {
                                         {record.ttl}
                                       </span>
                                       <button
-                                        onClick={() => handleCopy(record.recordValue, `value-${record.id}`)}
+                                        onClick={() => handleCopy(record.ttl, `ttl-${record.id}`)}
                                         className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
                                         title="Copy to clipboard"
                                       >
-                                        {copiedItem === `value-${record.id}` ? (
+                                        {copiedItem === `ttl-${record.id}` ? (
                                           <Check size={14} className="text-green-600" />
                                         ) : (
                                           <Copy size={14} />

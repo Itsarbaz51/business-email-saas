@@ -1,18 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 axios.defaults.withCredentials = true;
-
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const initialState = {
-    plan: null,
+    subscription: null,
     isLoading: false,
     error: null,
     success: null,
-    issubscriptionAuthenticated: false,
+    isSubscriptionAuthenticated: false,
 };
 
 const subscriptionSlice = createSlice({
@@ -26,39 +24,104 @@ const subscriptionSlice = createSlice({
         },
         subscriptionSuccess: (state, action) => {
             state.isLoading = false;
-            state.plan = action.payload?.data || action.payload; // store subscription data
-            state.issubscriptionAuthenticated = true;
-            state.success = action.payload?.message || "Subscription successful";
+            state.subscription = action.payload?.data || action.payload;
+            state.isSubscriptionAuthenticated = true;
+            state.success = action.payload?.message;
             state.error = null;
             toast.success(state.success);
         },
         subscriptionFail: (state, action) => {
             state.isLoading = false;
             state.error = action.payload;
-            state.issubscriptionAuthenticated = false;
+            state.isSubscriptionAuthenticated = false;
             toast.error(action.payload);
+        },
+        subscriptionReset: (state) => {
+            state.subscription = null;
+            state.isLoading = false;
+            state.error = null;
+            state.success = null;
+            state.isSubscriptionAuthenticated = false;
         },
     },
 });
 
-export const { subscriptionRequest, subscriptionSuccess, subscriptionFail } =
-    subscriptionSlice.actions;
+export const {
+    subscriptionRequest,
+    subscriptionSuccess,
+    subscriptionFail,
+    subscriptionReset,
+} = subscriptionSlice.actions;
 
-// Create or renew subscription (free or paid)
-export const createOrRenewSubscription = (userData) => async (dispatch) => {
+// Create Razorpay order
+export const createRazorpayOrder = (orderData) => async (dispatch) => {
     try {
         dispatch(subscriptionRequest());
         const { data } = await axios.post(
-            `${baseURL}/subscription/create-renew-subcription`,
-            userData
+            `${baseURL}/subscription/create-order`,
+            orderData
         );
-        console.log(data);
+        return data;
+    } catch (err) {
+        dispatch(subscriptionFail(err?.response?.data?.message || "Order creation failed"));
+        throw err;
+    }
+};
+
+// Create or renew subscription
+export const createOrRenewSubscriptionAction = (subscriptionData) => async (dispatch) => {
+    try {
+        dispatch(subscriptionRequest());
+        const { data } = await axios.post(
+            `${baseURL}/subscription/create-or-renew`,
+            subscriptionData
+        );
         dispatch(subscriptionSuccess(data));
         return data;
     } catch (err) {
-        dispatch(
-            subscriptionFail(err?.response?.data?.message || "Subscription failed")
+        dispatch(subscriptionFail(err?.response?.data?.message || "Subscription failed"));
+        throw err;
+    }
+};
+
+// Verify payment
+export const verifyPayment = (paymentData) => async (dispatch) => {
+    try {
+        dispatch(subscriptionRequest());
+        const { data } = await axios.post(
+            `${baseURL}/subscription/verify-payment`,
+            paymentData
         );
+        dispatch(subscriptionSuccess(data));
+        return data;
+    } catch (err) {
+        dispatch(subscriptionFail(err?.response?.data?.message || "Payment verification failed"));
+        throw err;
+    }
+};
+
+// Get current subscription
+export const getMySubscription = () => async (dispatch) => {
+    try {
+        dispatch(subscriptionRequest());
+        const { data } = await axios.get(`${baseURL}/subscription/current`);
+        dispatch(subscriptionSuccess(data));
+        return data;
+    } catch (err) {
+        dispatch(subscriptionFail(err?.response?.data?.message || "Fetching subscription failed"));
+        throw err;
+    }
+};
+
+// Cancel subscription
+export const cancelSubscription = () => async (dispatch) => {
+    try {
+        dispatch(subscriptionRequest());
+        const { data } = await axios.delete(`${baseURL}/subscription/cancel`);
+        dispatch(subscriptionSuccess(data));
+        return data;
+    } catch (err) {
+        dispatch(subscriptionFail(err?.response?.data?.message || "Cancel subscription failed"));
         throw err;
     }
 };
