@@ -9,6 +9,7 @@ const storedUser = localStorage.getItem("currentUser");
 
 const initialState = {
   user: [],
+  adminsData: [],
   currentUserData: storedUser ? JSON.parse(storedUser) : null,
   isLoading: false,
   error: null,
@@ -36,6 +37,11 @@ const authSlice = createSlice({
       state.error = null;
       localStorage.setItem("currentUser", JSON.stringify(userData));
     },
+    allDataSuccess: (state, action) => {
+      state.isLoading = false;
+      state.error = null;
+      state.adminsData = action.payload;
+    },
     authFail: (state, action) => {
       state.isLoading = false;
       state.error = action.payload || null;
@@ -52,7 +58,7 @@ const authSlice = createSlice({
       state.currentUserData = null;
       localStorage.removeItem("currentUser");
     },
-    
+
     logoutUser: (state) => {
       state.user = null;
       state.currentUserData = null;
@@ -70,6 +76,7 @@ export const {
   authSuccess,
   authFail,
   silentAuthFail,
+  allDataSuccess,
   logoutUser,
 } = authSlice.actions;
 
@@ -167,13 +174,12 @@ export const changePassword = (passwordData) => async (dispatch) => {
 
 export const toggleActiveAPI = (id) => async (dispatch) => {
   console.log(id);
-  
+
   try {
     dispatch(authRequest());
     const { data } = await axios.patch(`${baseURL}/auth/admin-toggle/${id}`);
-    dispatch(authSuccess(data));
-    await dispatch(authSuccess(data));
     toast.success(data.message);
+    dispatch(fetchAdmins());
     return data;
   } catch (error) {
     const errMsg = error?.response?.data?.message || error?.message;
@@ -181,4 +187,5 @@ export const toggleActiveAPI = (id) => async (dispatch) => {
     return error?.response?.data || { message: errMsg };
   }
 };
+
 export default authSlice.reducer;
