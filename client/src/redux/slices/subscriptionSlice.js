@@ -26,7 +26,7 @@ const subscriptionSlice = createSlice({
             state.isLoading = false;
             state.subscription = action.payload?.data || action.payload;
             state.isSubscriptionAuthenticated = true;
-            state.success = action.payload?.message;
+            state.success = action.payload?.message !== "Subscription retrieved";
             state.error = null;
             toast.success(state.success);
         },

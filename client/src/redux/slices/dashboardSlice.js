@@ -63,4 +63,17 @@ export const getAlldashboardData = () => async (dispatch) => {
   }
 };
 
+export const fetchAdmins = () => async (dispatch) => {
+  try {
+    dispatch(dashboardRequest());
+    const { data } = await axios.get(`${baseURL}/auth/all-admins`);
+    dispatch(dashboardSuccess(data.data));
+    // dispatch(domainSuccess(data));
+  } catch (err) {
+    // const errMsg = err?.response?.data?.message || err?.message;
+    // dispatch(domainFail(errMsg));
+    dispatch(dashboardFail([]));
+  }
+};
+
 export default dashboardSlice.reducer;

@@ -59,8 +59,10 @@ export default function Login() {
       const user = resultAction.data;
 
       switch (user.role.toUpperCase()) {
-        case "ADMIN":
         case "SUPER_ADMIN":
+          navigate("/superadmin/dashboard");
+          break;
+        case "ADMIN":
           navigate("/admin/dashboard");
           break;
         case "USER":

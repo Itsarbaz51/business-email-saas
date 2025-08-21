@@ -8,7 +8,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 const storedUser = localStorage.getItem("currentUser");
 
 const initialState = {
-  user: storedUser ? JSON.parse(storedUser) : null,
+  user: [],
   currentUserData: storedUser ? JSON.parse(storedUser) : null,
   isLoading: false,
   error: null,
@@ -52,6 +52,7 @@ const authSlice = createSlice({
       state.currentUserData = null;
       localStorage.removeItem("currentUser");
     },
+    
     logoutUser: (state) => {
       state.user = null;
       state.currentUserData = null;
@@ -72,7 +73,6 @@ export const {
   logoutUser,
 } = authSlice.actions;
 
-
 export const register = (userData) => async (dispatch) => {
   try {
     dispatch(authRequest());
@@ -86,7 +86,6 @@ export const register = (userData) => async (dispatch) => {
     return error?.response?.data || { message: errMsg };
   }
 };
-
 
 export const login = (credentials) => async (dispatch) => {
   try {
@@ -103,7 +102,6 @@ export const login = (credentials) => async (dispatch) => {
   }
 };
 
-
 export const getCurrentUser = () => async (dispatch) => {
   try {
     dispatch(authRequest());
@@ -116,7 +114,6 @@ export const getCurrentUser = () => async (dispatch) => {
     return error?.response?.data || { message: errMsg };
   }
 };
-
 
 export const logout = () => async (dispatch) => {
   try {
@@ -131,10 +128,14 @@ export const logout = () => async (dispatch) => {
     return error?.response?.data || { message: errMsg };
   }
 };
+
 export const updateProfile = (profileData) => async (dispatch) => {
   try {
     dispatch(authRequest());
-    const { data } = await axios.put(`${baseURL}/auth/profile-update`, profileData);
+    const { data } = await axios.put(
+      `${baseURL}/auth/profile-update`,
+      profileData
+    );
     dispatch(authSuccess(data));
     toast.success(data.message);
     return data;
@@ -148,9 +149,12 @@ export const updateProfile = (profileData) => async (dispatch) => {
 export const changePassword = (passwordData) => async (dispatch) => {
   try {
     dispatch(authRequest());
-    const { data } = await axios.post(`${baseURL}/auth/change-password`, passwordData);
+    const { data } = await axios.post(
+      `${baseURL}/auth/change-password`,
+      passwordData
+    );
     toast.success(data.message);
-    dispatch(logout())
+    dispatch(logout());
     return data;
   } catch (error) {
     const errMsg = error?.response?.data?.message || error?.message;
@@ -159,5 +163,22 @@ export const changePassword = (passwordData) => async (dispatch) => {
   }
 };
 
+// ====================== super admin =====================
 
+export const toggleActiveAPI = (id) => async (dispatch) => {
+  console.log(id);
+  
+  try {
+    dispatch(authRequest());
+    const { data } = await axios.patch(`${baseURL}/auth/admin-toggle/${id}`);
+    dispatch(authSuccess(data));
+    await dispatch(authSuccess(data));
+    toast.success(data.message);
+    return data;
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(authFail(errMsg));
+    return error?.response?.data || { message: errMsg };
+  }
+};
 export default authSlice.reducer;

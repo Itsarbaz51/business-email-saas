@@ -25,6 +25,8 @@ import StarredPage from "../pages/user/StarredPage.jsx";
 import ArchivePage from "../pages/user/ArchivePage.jsx";
 import TrashPage from "../pages/user/TrashPage.jsx";
 import EmailDetailsPage from "../pages/user/EmailDetailsPage.jsx";
+import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
+import SystemLogsPage from "../pages/superadmin/SystemLogsPage.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -52,7 +54,6 @@ export const router = createBrowserRouter(
 
           {/* detail pages  */}
           <Route path="inbox/detail/:id" element={<EmailDetailsPage />} />
-          
         </Route>
       </Route>
 
@@ -61,7 +62,7 @@ export const router = createBrowserRouter(
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="domains" element={<DomainsPage />} />
-          <Route path="users" element={<UsersPage />} />
+          {/* <Route path="users" element={<UsersPage />} /> */}
           <Route path="mailboxes" element={<MailboxesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="billing" element={<BillingPage />} />
@@ -72,7 +73,13 @@ export const router = createBrowserRouter(
         <Route path="/superadmin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
-          {/* ... other super admin routes */}
+          <Route path="domains" element={<DomainsPage />} />
+          {/* <Route path="users" element={<UsersPage />} /> */}
+          <Route path="mailboxes" element={<MailboxesPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="billing" element={<BillingPage />} />
+          <Route path="logs" element={<SystemLogsPage />} />
+          <Route path="tools" element={<ToolsPage />} />
         </Route>
       </Route>
 

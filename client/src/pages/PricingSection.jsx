@@ -1,6 +1,9 @@
 import { useEffect, useState, useRef } from "react";
 import { Check } from "lucide-react";
-import { createRazorpayOrder, createOrRenewSubscriptionAction } from "../redux/slices/subscriptionSlice";
+import {
+  createRazorpayOrder,
+  createOrRenewSubscriptionAction,
+} from "../redux/slices/subscriptionSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../redux/slices/authSlice";
@@ -103,7 +106,7 @@ export const PricingSection = ({
     if (price === 0) return "Free";
 
     // Use Indian Rupee symbol (₹) and Indian number formatting
-    return `₹${price.toLocaleString('en-IN')}`;
+    return `₹${price.toLocaleString("en-IN")}`;
   };
 
   const loadRazorpay = () =>
@@ -132,11 +135,13 @@ export const PricingSection = ({
 
   const handleFreeSubscription = async (plan) => {
     try {
-      const result = await dispatch(createOrRenewSubscriptionAction({
-        plan: plan.plan,
-        billingCycle: billingCycle,
-        paymentStatus: "FREE"
-      }));
+      const result = await dispatch(
+        createOrRenewSubscriptionAction({
+          plan: plan.plan,
+          billingCycle: billingCycle,
+          paymentStatus: "FREE",
+        })
+      );
 
       if (result && result.success !== false) {
         toast.success("Subscribed to Free Plan successfully!");
@@ -144,7 +149,9 @@ export const PricingSection = ({
         throw new Error(result?.message || "Free subscription failed");
       }
     } catch (error) {
-      toast.error("Free subscription failed: " + (error.message || "Unknown error"));
+      toast.error(
+        "Free subscription failed: " + (error.message || "Unknown error")
+      );
       throw error;
     }
   };
@@ -157,11 +164,15 @@ export const PricingSection = ({
 
     try {
       // Create order first - with shorter receipt ID
-      const result = await dispatch(createRazorpayOrder({
-        plan: plan.plan,
-        billingCycle: billingCycle,
-        receiptId: generateShortReceiptId(currentUserData?.id, plan.plan)
-      }));
+      const result = await dispatch(
+        createRazorpayOrder({
+          plan: plan.plan,
+          billingCycle: billingCycle,
+          receiptId: generateShortReceiptId(currentUserData?.id, plan.plan),
+        })
+      );
+
+      console.log("result", result);
 
       const orderData = result?.data || result;
 
@@ -185,7 +196,7 @@ export const PricingSection = ({
               plan: plan.plan,
               billingCycle: billingCycle,
               paymentStatus: "SUCCESS",
-              paymentProvider: "RAZORPAY"
+              paymentProvider: "RAZORPAY",
             };
 
             await dispatch(createOrRenewSubscriptionAction(paymentData));
@@ -198,25 +209,25 @@ export const PricingSection = ({
           }
         },
         prefill: {
-          name: currentUserData?.name || "",
-          email: currentUserData?.email || "",
-          contact: currentUserData?.phone || "",
+          name: currentUserData.name || "Test User",
+          email: currentUserData.email || "test@example.com",
+          contact: currentUserData.phone?.toString() || "9999999999",
         },
+
         theme: { color: "#3399cc" },
         modal: {
           ondismiss: function () {
             setIsProcessing(false);
             toast.info("Payment cancelled");
-          }
-        }
+          },
+        },
       };
 
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
-
     } catch (error) {
-      toast.error("Subscription failed: " + (error.message || "Unknown error"));
-      console.error("Subscription error:", error);
+      // toast.error("Subscription failed: " + (error.message || "Unknown error"));
+      console.error("Subscription error:", error.message);
       setIsProcessing(false);
     }
   };
@@ -252,7 +263,9 @@ export const PricingSection = ({
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">MailFlow</h1>
-          <p className="text-xl text-gray-600">Choose the perfect plan for your email management needs</p>
+          <p className="text-xl text-gray-600">
+            Choose the perfect plan for your email management needs
+          </p>
         </div>
 
         {/* Billing toggle */}
@@ -261,10 +274,11 @@ export const PricingSection = ({
             {["MONTHLY", "YEARLY"].map((cycle) => (
               <button
                 key={cycle}
-                className={`px-6 py-3 rounded-full text-sm font-semibold transition-colors ${billingCycle === cycle
+                className={`px-6 py-3 rounded-full text-sm font-semibold transition-colors ${
+                  billingCycle === cycle
                     ? "bg-blue-600 text-white shadow-md"
                     : "text-gray-700 hover:text-gray-900"
-                  }`}
+                }`}
                 onClick={() => setBillingCycle(cycle)}
               >
                 {cycle}
@@ -284,13 +298,16 @@ export const PricingSection = ({
             return (
               <div
                 key={idx}
-                className={`p-8 border rounded-2xl transition-all duration-300 bg-white ${selectedPlan?.plan === plan.plan
+                className={`p-8 border rounded-2xl transition-all duration-300 bg-white ${
+                  selectedPlan?.plan === plan.plan
                     ? "ring-4 ring-blue-500 shadow-xl transform -translate-y-2"
                     : "hover:shadow-lg hover:border-blue-300"
-                  }`}
+                }`}
               >
                 <div className="flex justify-between items-start mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900">{plan.plan}</h3>
+                  <h3 className="text-2xl font-bold text-gray-900">
+                    {plan.plan}
+                  </h3>
                   {plan.plan === "PREMIUM" && (
                     <span className="bg-purple-100 text-purple-800 text-xs font-semibold px-2.5 py-0.5 rounded">
                       POPULAR
@@ -303,7 +320,9 @@ export const PricingSection = ({
                     {formatPrice(displayPrice)}
                   </span>
                   {plan.price > 0 && (
-                    <span className="text-gray-600">/{billingCycle.toLowerCase()}</span>
+                    <span className="text-gray-600">
+                      /{billingCycle.toLowerCase()}
+                    </span>
                   )}
                 </div>
 
@@ -323,7 +342,10 @@ export const PricingSection = ({
                   <li className="flex items-center">
                     <Check className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
                     <span>
-                      <strong>{formatStorage(plan.features.allowedStorageMB)}</strong> Storage
+                      <strong>
+                        {formatStorage(plan.features.allowedStorageMB)}
+                      </strong>{" "}
+                      Storage
                     </span>
                   </li>
                   <li className="flex items-center">
@@ -331,7 +353,9 @@ export const PricingSection = ({
                     <span>
                       {plan.features.maxSentEmails === "Unlimited"
                         ? "Unlimited Sent Emails"
-                        : `Up to ${plan.features.maxSentEmails.toLocaleString('en-IN')} Sent Emails/mo`}
+                        : `Up to ${plan.features.maxSentEmails.toLocaleString(
+                            "en-IN"
+                          )} Sent Emails/mo`}
                     </span>
                   </li>
                   <li className="flex items-center">
@@ -339,23 +363,29 @@ export const PricingSection = ({
                     <span>
                       {plan.features.maxReceivedEmails === "Unlimited"
                         ? "Unlimited Received Emails"
-                        : `Up to ${plan.features.maxReceivedEmails.toLocaleString('en-IN')} Received Emails/mo`}
+                        : `Up to ${plan.features.maxReceivedEmails.toLocaleString(
+                            "en-IN"
+                          )} Received Emails/mo`}
                     </span>
                   </li>
                 </ul>
 
                 <button
                   disabled={isProcessing}
-                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${plan.plan === "PREMIUM"
+                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+                    plan.plan === "PREMIUM"
                       ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
                       : plan.plan === "BASIC"
-                        ? "bg-blue-600 hover:bg-blue-700 text-white"
-                        : "bg-gray-600 hover:bg-gray-700 text-white"
-                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      ? "bg-blue-600 hover:bg-blue-700 text-white"
+                      : "bg-gray-600 hover:bg-gray-700 text-white"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
                   onClick={() => handleSubscribe(plan)}
                 >
-                  {isProcessing ? "Processing..." :
-                    plan.price === 0 ? "Start Free" : "Subscribe Now"}
+                  {isProcessing
+                    ? "Processing..."
+                    : plan.price === 0
+                    ? "Start Free"
+                    : "Subscribe Now"}
                 </button>
               </div>
             );
@@ -364,7 +394,9 @@ export const PricingSection = ({
 
         {/* Additional information */}
         <div className="mt-12 text-center text-gray-600">
-          <p>All plans include 24/7 support and a 14-day money-back guarantee</p>
+          <p>
+            All plans include 24/7 support and a 14-day money-back guarantee
+          </p>
         </div>
       </div>
     </div>
