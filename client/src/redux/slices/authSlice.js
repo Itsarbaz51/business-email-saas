@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { fetchAdmins } from "./dashboardSlice";
 
 axios.defaults.withCredentials = true;
 const baseURL = import.meta.env.VITE_API_BASE_URL;

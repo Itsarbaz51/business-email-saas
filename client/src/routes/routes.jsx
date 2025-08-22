@@ -9,11 +9,10 @@ import HomePage from "../pages/renderer/LandingPage.jsx";
 import InboxPage from "../pages/user/InboxPage.jsx";
 import RequireRole from "../components/auth/RequireRole.jsx";
 import DashboardLayout from "../layout/DashboardLayout.jsx";
-import AdminDashboard from "../pages/admin/AdminDashboard.jsx";
+import Dashboard from "../pages/Dashboard.jsx";
 import NotFoundPage from "../pages/NotFoundPage.jsx";
 import Login from "../pages/Login.jsx";
 import DomainsPage from "../pages/admin/DomainsPage.jsx";
-import UsersPage from "../pages/admin/UsersPage.jsx";
 import MailboxesPage from "../pages/admin/MailboxesPage.jsx";
 import SettingsPage from "../pages/admin/SettingsPage.jsx";
 import BillingPage from "../pages/admin/BillingPage.jsx";
@@ -38,8 +37,6 @@ export const router = createBrowserRouter(
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* <Route path="/unauthorized" element={<UnauthorizedPage />} /> */}
-
       {/* protected routes */}
       <Route element={<RequireRole allowedRoles={["USER"]} />}>
         <Route path="/u" element={<DashboardLayout />}>
@@ -60,9 +57,8 @@ export const router = createBrowserRouter(
       <Route element={<RequireRole allowedRoles={["ADMIN"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="domains" element={<DomainsPage />} />
-          {/* <Route path="users" element={<UsersPage />} /> */}
           <Route path="mailboxes" element={<MailboxesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="billing" element={<BillingPage />} />
@@ -72,9 +68,8 @@ export const router = createBrowserRouter(
       <Route element={<RequireRole allowedRoles={["SUPER_ADMIN"]} />}>
         <Route path="/superadmin" element={<DashboardLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="domains" element={<DomainsPage />} />
-          {/* <Route path="users" element={<UsersPage />} /> */}
           <Route path="mailboxes" element={<MailboxesPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="billing" element={<BillingPage />} />

@@ -1,29 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Plus, Check, Copy, Globe, Shield, ShieldAlert, Edit, Trash2, ChevronDown, ChevronUp, ShieldCheck } from "lucide-react";
+import {
+  Check,
+  Copy,
+  Globe,
+  Shield,
+  ShieldAlert,
+  Edit,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  ShieldCheck,
+  Activity,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
 import AddDomain from "../../components/forms/AddDomain.jsx";
-import { addDomain, deleteDomain, fetchDomains, verifyDomain } from "../../redux/slices/domainSlice.js";
-import NotFound from "../../components/NotFound.jsx";
+import {
+  addDomain,
+  deleteDomain,
+  fetchDomains,
+  updateDomain,
+  verifyDomain,
+} from "../../redux/slices/domainSlice.js";
 import ConfirmDelete from "../ConfirmDelete.jsx";
+import Header from "../../components/ui/Header.jsx";
+import StatCard from "../../components/ui/Stats.jsx";
+import EmptyState from "../../components/ui/EmptyState.jsx";
+import Footer from "../../components/Footer.jsx";
 
 function DomainsPage() {
   const dispatch = useDispatch();
   const [showForm, setShowForm] = useState(false);
   const [editDomainData, setEditDomainData] = useState(null);
   const [copiedItem, setCopiedItem] = useState(null);
-  const [expandedDomains, setExpandedDomains] = useState(new Set());
+  const [expandedDomains, setExpandedDomains] = useState(() => new Set());
   const [isVerifying, setIsVerifying] = useState({});
   const [verificationTimer, setVerificationTimer] = useState({});
   const [verificationError, setVerificationError] = useState({});
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const domains = useSelector((state) => state.domain.domains || []);
+
   useEffect(() => {
     dispatch(fetchDomains());
   }, [dispatch]);
 
   const handleAddDomain = (data) => {
     if (editDomainData) {
-      dispatch(editDomain({ id: editDomainData.id, ...data }));
+      dispatch(updateDomain({ id: editDomainData.id, ...data }));
     } else {
       dispatch(addDomain(data));
     }
@@ -32,35 +57,27 @@ function DomainsPage() {
   };
 
   const verifyDnsHandler = async (domainName, domainId) => {
-    setIsVerifying(prev => ({ ...prev, [domainId]: true }));
-    setVerificationError(prev => ({ ...prev, [domainId]: null }));
+    setIsVerifying((prev) => ({ ...prev, [domainId]: true }));
+    setVerificationError((prev) => ({ ...prev, [domainId]: null }));
 
     const expiryTime = Date.now() + 24 * 60 * 60 * 1000;
-    setVerificationTimer(prev => ({ ...prev, [domainId]: expiryTime }));
+    setVerificationTimer((prev) => ({ ...prev, [domainId]: expiryTime }));
 
     try {
       const result = await dispatch(verifyDomain(domainName));
-
-      if (result && result.success) {
-        // Verification succeeded
-        console.log(`Domain ${domainName} verified successfully`);
-      } else {
-        // Verification failed but API call succeeded
-        setVerificationError(prev => ({
+      if (!(result && result.success)) {
+        setVerificationError((prev) => ({
           ...prev,
-          [domainId]: result?.message || "Domain verification failed"
+          [domainId]: result?.message || "Domain verification failed",
         }));
       }
     } catch (error) {
-      // API call failed
-      console.error("Verification error:", error);
-      setVerificationError(prev => ({
+      setVerificationError((prev) => ({
         ...prev,
-        [domainId]: error.message || "Verification request failed"
+        [domainId]: error.message || "Verification request failed",
       }));
     } finally {
-      // Always stop the loader, regardless of success/failure
-      setIsVerifying(prev => ({ ...prev, [domainId]: false }));
+      setIsVerifying((prev) => ({ ...prev, [domainId]: false }));
     }
   };
 
@@ -70,32 +87,25 @@ function DomainsPage() {
   };
 
   const handleCopy = (value, id) => {
-    navigator.clipboard.writeText(value);
+    navigator.clipboard.writeText(String(value));
     setCopiedItem(id);
     setTimeout(() => setCopiedItem(null), 2000);
   };
 
   const toggleDomainExpansion = (domainId) => {
-    setExpandedDomains(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(domainId)) {
-        newSet.delete(domainId);
-      } else {
-        newSet.add(domainId);
-      }
-      return newSet;
+    setExpandedDomains((prev) => {
+      const s = new Set(prev);
+      s.has(domainId) ? s.delete(domainId) : s.add(domainId);
+      return s;
     });
   };
 
   const getDomainVerificationStatus = (domain) => {
     const hasRecords = domain.dnsRecords && domain.dnsRecords.length > 0;
     if (!hasRecords) return { isVerified: false, hasRecords: false };
-
-    const allVerified = domain.dnsRecords.every(record => record.isVerified === true);
+    const allVerified = domain.dnsRecords.every((r) => r.isVerified === true);
     return { isVerified: allVerified, hasRecords: true };
   };
-
-  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const handleDeleteConfirm = () => {
     if (deleteTarget) {
@@ -104,323 +114,451 @@ function DomainsPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Domain Management</h1>
-              <p className="text-gray-600">Manage your domains and DNS configurations</p>
-            </div>
-            <button
-              onClick={() => {
-                setEditDomainData(null);
-                setShowForm(true);
-              }}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-            >
-              <Plus size={20} /> Add Domain
-            </button>
-          </div>
-        </div>
+  // Stats
+  const totalDomains = domains.length;
+  const verifiedDomains = domains.filter(
+    (d) => getDomainVerificationStatus(d).isVerified
+  ).length;
+  const activeDomains = domains.filter((d) => d.status === "active").length;
+  const pendingDomains = domains.filter((d) => isWithin24h(d.id)).length;
 
-        {/* Stats Cards */}
+  const stats = [
+    {
+      title: "Total Domains",
+      count: totalDomains,
+      description: "Registered domains",
+      icon: <Globe className="w-6 h-6 text-white" />,
+      gradientFrom: "blue-500",
+      gradientTo: "cyan-500",
+    },
+    {
+      title: "Verified",
+      count: verifiedDomains,
+      description: "DNS configured",
+      icon: <ShieldCheck className="w-6 h-6 text-white" />,
+      gradientFrom: "green-500",
+      gradientTo: "emerald-500",
+    },
+    {
+      title: "Active",
+      count: activeDomains,
+      description: "Currently active",
+      icon: <Activity className="w-6 h-6 text-white" />,
+      gradientFrom: "purple-500",
+      gradientTo: "pink-500",
+    },
+    {
+      title: "Pending",
+      count: pendingDomains,
+      description: "Verification pending",
+      icon: <Clock className="w-6 h-6 text-white" />,
+      gradientFrom: "orange-500",
+      gradientTo: "red-500",
+    },
+  ];
+
+  // UI helpers
+  const renderDnsStatusPill = (domain) => {
+    const verificationStatus = getDomainVerificationStatus(domain);
+    const isPending = isWithin24h(domain.id);
+    const isVerifyingDomain = isVerifying[domain.id];
+
+    if (verificationStatus.isVerified) {
+      return (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+          <ShieldCheck size={14} /> DNS Verified
+        </span>
+      );
+    }
+    if (isPending) {
+      return (
+        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+          <Clock size={14} /> Verification Pending
+          <span className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent"></span>
+        </span>
+      );
+    }
+    if (verificationStatus.hasRecords) {
+      return (
+        <button
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition"
+          disabled={isVerifyingDomain}
+          onClick={() => verifyDnsHandler(domain.name, domain.id)}
+          title="Verify DNS"
+        >
+          <ShieldAlert size={14} />
+          {isVerifyingDomain ? "Verifying..." : "DNS Unverified"}
+        </button>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">
+        <Shield size={14} /> No DNS Records
+      </span>
+    );
+  };
+
+  const renderDnsRecordsTable = (domain) => (
+    <div className="mt-4 overflow-x-auto rounded-2xl border-2 border-gray-200 bg-white/80">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              #
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Type
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Record Name
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Record Value
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              TTL (sec)
+            </th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Status
+            </th>
+            <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {domain.dnsRecords.map((record, index) => (
+            <tr
+              key={record.id}
+              className="hover:bg-blue-50/40 transition-colors"
+            >
+              <td className="px-4 py-3 text-sm text-gray-600">{index + 1}</td>
+              <td className="px-4 py-3">
+                <span className="inline-flex px-2.5 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow">
+                  {record.recordType}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono text-gray-900 break-all">
+                    {record.recordName}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleCopy(record.recordName, `name-${record.id}`)
+                    }
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white transition"
+                    title="Copy name"
+                  >
+                    {copiedItem === `name-${record.id}` ? (
+                      <Check size={16} />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                  </button>
+                </div>
+              </td>
+              <td className="px-4 py-3 max-w-[420px]">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono text-gray-900 break-all line-clamp-2">
+                    {record.recordValue}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleCopy(record.recordValue, `value-${record.id}`)
+                    }
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white transition"
+                    title="Copy value"
+                  >
+                    {copiedItem === `value-${record.id}` ? (
+                      <Check size={16} />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                  </button>
+                </div>
+              </td>
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-mono text-gray-900">
+                    {record.ttl}
+                  </span>
+                  <button
+                    onClick={() =>
+                      handleCopy(String(record.ttl), `ttl-${record.id}`)
+                    }
+                    className="p-2 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white transition"
+                    title="Copy TTL"
+                  >
+                    {copiedItem === `ttl-${record.id}` ? (
+                      <Check size={16} />
+                    ) : (
+                      <Copy size={16} />
+                    )}
+                  </button>
+                </div>
+              </td>
+              <td className="px-4 py-3">
+                {record.isVerified ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200">
+                    <ShieldCheck size={14} /> Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">
+                    <ShieldAlert size={14} /> Unverified
+                  </span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <button
+                  onClick={() =>
+                    handleCopy(
+                      `${record.recordType} ${record.recordName} ${record.recordValue} TTL=${record.ttl}`,
+                      `all-${record.id}`
+                    )
+                  }
+                  className="px-3 py-2 text-sm rounded-xl bg-gray-100 hover:bg-blue-600 hover:text-white font-semibold transition"
+                  title="Copy row"
+                >
+                  {copiedItem === `all-${record.id}` ? "Copied" : "Copy Row"}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="px-4 py-3 text-sm text-gray-600 bg-gray-50 border-t">
+        Tip: Add all records exactly the same way to your DNS provider.
+        Propagation can take from a few minutes to a few hours.
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Header */}
+      <Header
+        setEditFormData={setEditDomainData}
+        setShowForm={setShowForm}
+        subTitle="Domain Management System"
+        title="Domain Control Center"
+        tagLine="Effortlessly manage your domains, verify DNS configurations, and monitor status with our advanced management platform."
+        btnName="Add New Domain"
+      />
+
+      <div className="flex flex-col gap-y-6">
+        {/* Stats */}
         {domains?.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Globe className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total Domains</p>
-                  <p className="text-xl font-bold text-gray-900">{domains.length}</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <ShieldCheck className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Verified</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {domains.filter(d => getDomainVerificationStatus(d).isVerified).length}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <ShieldAlert className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Active</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {domains.filter(d => d.status === 'active').length}
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {stats.map((stat, idx) => (
+              <StatCard key={idx} {...stat} />
+            ))}
           </div>
         )}
 
-        {/* Domain Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {domains?.length === 0 ? (
-            <div className="col-span-full">
-              <NotFound
-                title="No Domains Found"
-                message="You haven't added any domains yet. Add one to get started."
-                icon="inbox"
-              />
-            </div>
-          ) : (
-            domains?.map((domain) => {
-              const verificationStatus = getDomainVerificationStatus(domain);
-              const isVerifyingDomain = isVerifying[domain.id];
-              const isPending = isWithin24h(domain.id);
-              const errorMessage = verificationError[domain.id];
+        {/* Domains Table */}
+        {domains?.length === 0 ? (
+          <EmptyState
+            title="No Domains Yet"
+            message="Start by adding your first domain to begin managing DNS configurations and monitoring status."
+            buttonLabel="Add Your First Domain"
+            onButtonClick={() => {
+              setEditDomainData(null);
+              setShowForm(true);
+            }}
+          />
+        ) : (
+          <div className="overflow-x-auto rounded-3xl border-2 border-white/40 bg-white/80 shadow-lg">
+            <table className="min-w-[900px] w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Expand
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Domain
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    DNS Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Records
+                  </th>
+                  <th className="px-4 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {domains.map((domain) => {
+                  const isExpanded = expandedDomains.has(domain.id);
+                  const errorMessage = verificationError[domain.id];
+                  const recordsCount = domain.dnsRecords?.length || 0;
 
-              return (
-                <div key={domain.id} className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                  {/* Domain Header */}
-                  <div className="p-6">
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3 break-all">
-                          {domain.name}
-                        </h3>
+                  return (
+                    <React.Fragment key={domain.id}>
+                      <tr className="hover:bg-blue-50/40 transition-colors overflow-auto">
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => toggleDomainExpansion(domain.id)}
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 hover:bg-blue-600 hover:text-white transition"
+                            title={isExpanded ? "Collapse" : "Expand"}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp size={18} />
+                            ) : (
+                              <ChevronDown size={18} />
+                            )}
+                          </button>
+                        </td>
 
-                        {/* Status and Verification Row */}
-                        <div className="flex gap-2">
-                          {/* Domain Status */}
-                          <div className="flex items-center gap-3">
-                            <span
-                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${domain.status === "active"
-                                ? "bg-green-100 text-green-800 border border-green-200"
-                                : "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                                }`}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
+                              <Globe className="w-4 h-4 text-white" />
+                            </span>
+                            <span className="font-semibold text-gray-900 break-all">
+                              {domain.name}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleCopy(domain.name, `domain-${domain.id}`)
+                              }
+                              className="p-2 rounded-lg bg-gray-100 hover:bg-blue-600 hover:text-white transition"
+                              title="Copy domain"
                             >
-                              {domain.status}
-                            </span>
+                              {copiedItem === `domain-${domain.id}` ? (
+                                <Check size={16} />
+                              ) : (
+                                <Copy size={16} />
+                              )}
+                            </button>
                           </div>
+                        </td>
 
-                          {/* Verification Status */}
-                          <div className="flex items-center gap-2">
-                            {verificationStatus.isVerified ? (
-                              <div className="flex items-center gap-1">
-                                <ShieldCheck size={16} className="text-green-600" />
-                                <span className="text-xs font-medium text-green-600">DNS Verified</span>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${
+                              domain.status === "active"
+                                ? "bg-green-50 text-green-700 border-green-200"
+                                : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                            }`}
+                          >
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                domain.status === "active"
+                                  ? "bg-green-500"
+                                  : "bg-yellow-500"
+                              } animate-pulse`}
+                            ></span>
+                            {domain.status}
+                          </span>
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {renderDnsStatusPill(domain)}
+                        </td>
+
+                        <td className="px-4 py-3 text-sm text-gray-700">
+                          {recordsCount}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setEditDomainData(domain);
+                                setShowForm(true);
+                              }}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 rounded-xl transition"
+                            >
+                              <Edit size={16} /> Edit
+                            </button>
+                            <button
+                              onClick={() => setDeleteTarget(domain)}
+                              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 hover:border-red-600 rounded-xl transition"
+                            >
+                              <Trash2 size={16} /> Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {/* Error message row */}
+                      {errorMessage && (
+                        <tr>
+                          <td colSpan={6} className="px-4 pb-3">
+                            <div className="mt-2 p-4 bg-gradient-to-r from-red-50 to-pink-50 border-2 border-red-200 rounded-2xl">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle
+                                  size={18}
+                                  className="text-red-600"
+                                />
+                                <p className="text-sm font-medium text-red-700">
+                                  {errorMessage}
+                                </p>
                               </div>
-                            ) : isPending ? (
-                              <div className="flex items-center gap-1">
-                                <span className="text-xs font-medium text-blue-600">Verification Pending (upto 24h)</span>
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                              </div>
-                            ) : verificationStatus.hasRecords ? (
-                              <button
-                                className="flex items-center gap-1 hover:bg-red-50 px-2 py-1 rounded transition-colors"
-                                disabled={isVerifyingDomain}
-                                onClick={() => verifyDnsHandler(domain.name, domain.id)}
-                              >
-                                <ShieldAlert size={16} className="text-red-600" />
-                                <span className="text-xs font-medium text-red-600">
-                                  {isVerifyingDomain ? "Verifying..." : "DNS Unverified"}
-                                </span>
-                                <span className="text-xs text-gray-500">(click to verify)</span>
-                              </button>
-                            ) : (
-                              <div className="flex items-center gap-1">
-                                <Shield size={16} className="text-gray-400" />
-                                <span className="text-xs font-medium text-gray-500">No DNS Records</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Error Message */}
-                        {errorMessage && (
-                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-xs text-red-600">{errorMessage}</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditDomainData(domain);
-                          setShowForm(true);
-                        }}
-                        className="flex items-center gap-1 px-3 py-2 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                      >
-                        <Edit size={14} />
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => setDeleteTarget(domain)}
-                        className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                      <ConfirmDelete
-                        isOpen={!!deleteTarget}
-                        domainName={deleteTarget?.name}
-                        onClose={() => setDeleteTarget(null)}
-                        onConfirm={handleDeleteConfirm}
-                      />
-                    </div>
-                  </div>
-
-                  {/* DNS Records Section */}
-                  {domain.dnsRecords?.length > 0 && (
-                    <div className="border-t border-gray-100 bg-gray-50">
-                      <div className="p-6">
-                        <button
-                          onClick={() => toggleDomainExpansion(domain.id)}
-                          className="w-full flex items-center justify-between hover:bg-gray-100 p-2 rounded-lg transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <span className="text-sm font-semibold text-gray-900">
-                              DNS Records ({domain.dnsRecords.length})
-                            </span>
-                          </div>
-                          <div>
-                            {expandedDomains.has(domain.id) ? (
-                              <ChevronUp size={16} className="text-gray-500" />
-                            ) : (
-                              <ChevronDown size={16} className="text-gray-500" />
-                            )}
-                          </div>
-                        </button>
-                        <span className="text-xs mx-2.5 text-gray-500">
-                          Add these to your DNS provider
-                        </span>
-
-                        {expandedDomains.has(domain.id) && (
-                          <div className="mt-4 space-y-3 max-h-64 overflow-y-auto">
-                            <div className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
-                              <p className="font-medium mb-1">Instructions:</p>
-                              <p>Add these DNS records to your domain provider (GoDaddy, Hostinger, etc.) to verify ownership and enable services.</p>
                             </div>
+                          </td>
+                        </tr>
+                      )}
 
-                            {domain.dnsRecords.map((record) => (
-                              <div
-                                key={record.id}
-                                className="bg-white rounded-lg border border-gray-200 p-4 hover:border-gray-300 transition-colors"
-                              >
-                                {/* Record Type and Status */}
-                                <div className="flex justify-between items-center mb-3">
-                                  <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-md border border-blue-200">
-                                    {record.recordType}
-                                  </span>
-                                  {record.isVerified && (
-                                    <div className="flex items-center gap-1 text-green-600">
-                                      <ShieldCheck size={12} />
-                                      <span className="text-xs">Verified</span>
-                                    </div>
-                                  )}
+                      {/* Expanded DNS Records row */}
+                      {isExpanded && domain.dnsRecords?.length > 0 && (
+                        <tr className="bg-gradient-to-r from-gray-50/50 to-white/50">
+                          <td colSpan={6} className="px-4 pb-6">
+                            {/* Scrollable container */}
+                            <div className="max-h-96 overflow-y-auto pr-2">
+                              {/* Guide */}
+                              <div className="mt-4 bg-gradient-to-r from-blue-50 to-cyan-50 p-4 rounded-2xl border-2 border-blue-200">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg">
+                                    <AlertTriangle className="w-4 h-4 text-white" />
+                                  </div>
+                                  <p className="font-semibold text-blue-800">
+                                    DNS Configuration Guide
+                                  </p>
                                 </div>
-
-                                {/* Record Details */}
-                                <div className="space-y-3">
-                                  {/* Record Name */}
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                                      Name
-                                    </label>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
-                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
-                                        {record.recordName}
-                                      </span>
-                                      <button
-                                        onClick={() => handleCopy(record.recordName, `name-${record.id}`)}
-                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
-                                        title="Copy to clipboard"
-                                      >
-                                        {copiedItem === `name-${record.id}` ? (
-                                          <Check size={14} className="text-green-600" />
-                                        ) : (
-                                          <Copy size={14} />
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-
-                                  {/* Record Value */}
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                                      Value
-                                    </label>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
-                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
-                                        {record.recordValue}
-                                      </span>
-                                      <button
-                                        onClick={() => handleCopy(record.recordValue, `value-${record.id}`)}
-                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
-                                        title="Copy to clipboard"
-                                      >
-                                        {copiedItem === `value-${record.id}` ? (
-                                          <Check size={14} className="text-green-600" />
-                                        ) : (
-                                          <Copy size={14} />
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
-                                      TTL
-                                    </label>
-                                    <div className="flex items-center justify-between bg-gray-50 rounded-md border border-gray-200 p-2">
-                                      <span className="text-sm font-mono text-gray-900 break-all mr-2">
-                                        {record.ttl}
-                                      </span>
-                                      <button
-                                        onClick={() => handleCopy(record.ttl, `ttl-${record.id}`)}
-                                        className="flex-shrink-0 p-1 text-gray-500 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
-                                        title="Copy to clipboard"
-                                      >
-                                        {copiedItem === `ttl-${record.id}` ? (
-                                          <Check size={14} className="text-green-600" />
-                                        ) : (
-                                          <Copy size={14} />
-                                        )}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
+                                <p className="text-sm text-blue-700">
+                                  Copy these DNS records to your registrar
+                                  (GoDaddy, Namecheap, Cloudflare, etc.) to
+                                  verify ownership.
+                                </p>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
 
-        {/* Add Domain Form Modal */}
-        <AddDomain
-          isOpen={showForm}
-          onClose={() => setShowForm(false)}
-          onSubmit={handleAddDomain}
-          initialData={editDomainData}
-        />
+                              {/* DNS Records Table */}
+                              {renderDnsRecordsTable(domain)}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
+
+      {/* Add Domain Modal */}
+      <AddDomain
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        onSubmit={handleAddDomain}
+        initialData={editDomainData}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDelete
+        isOpen={!!deleteTarget}
+        domainName={deleteTarget?.name}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

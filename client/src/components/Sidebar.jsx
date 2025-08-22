@@ -110,29 +110,27 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
   const { user: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!currentUser) {
-      dispatch(getCurrentUser());
-    }
+    if (!currentUser) dispatch(getCurrentUser());
   }, [dispatch, currentUser]);
 
   const role = currentUser?.role?.toUpperCase().replace(" ", "_") || null;
   const location = useLocation();
-
   if (!role) return null;
 
   // Base path
   const basePath =
     role === "USER" ? "/u" : role === "ADMIN" ? "/admin" : "/superadmin";
 
-  // Sidebar links
+  // Visible links
   const visibleLinks = navItems
     .filter((item) => item.roles.includes(role))
     .map((item) => ({
       ...item,
-      path: item.path.replace(":role", basePath.replace("/", "")),
+      path: item.path.includes(":role")
+        ? item.path.replace(":role", basePath.replace("/", ""))
+        : item.path,
     }));
 
-  // Split items
   const superAdminItems = visibleLinks.filter(
     (item) => item.roles.length === 1 && item.roles[0] === "SUPER_ADMIN"
   );
@@ -140,30 +138,35 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     (item) => !superAdminItems.includes(item)
   );
 
-  const labels = [
-    { name: "Work", color: "bg-blue-500" },
-    { name: "Personal", color: "bg-green-500" },
-    { name: "Important", color: "bg-red-500" },
-    { name: "Travel", color: "bg-yellow-500" },
-  ];
-
   return (
     <aside
-      className={`bg-white border-r border-gray-200 w-72 fixed top-0 left-0 h-full z-40 overflow-y-auto
-      transform transition-transform duration-300
-      ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-      lg:static lg:translate-x-0 lg:flex lg:flex-col`}
+      className={[
+        // glass + border + shadow (theme)
+        "bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl",
+        "w-72 fixed top-0 left-0 h-screen z-40",
+        "transform transition-transform duration-300",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+        "lg:static lg:translate-x-0 lg:flex lg:flex-col",
+      ].join(" ")}
     >
+
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-8 h-8 bg-gradient-to-br from-violet-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" />
+      <div className="p-5 border-b border-white/30">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 blur opacity-40" />
+            <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" />
+            </div>
           </div>
-          <h2 className="text-xl font-bold text-gray-900">MailFlow</h2>
+          <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
+            MailFlow
+          </h2>
+
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden fixed top-5 right-4 p-2 border border-gray-300 rounded-lg"
+            className="lg:hidden ml-auto p-2 rounded-lg border border-white/30 bg-white/60 hover:bg-white/80 transition"
+            aria-label="Close sidebar"
           >
             <X className="w-4 h-4" />
           </button>
@@ -172,10 +175,13 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
         {role === "USER" && (
           <button
             onClick={onCompose}
-            className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl shadow-lg"
+            className="w-full mt-4 group relative inline-flex items-center gap-2 px-4 py-3 rounded-2xl font-semibold text-white bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:from-blue-700 hover:via-blue-800 hover:to-purple-800 transition shadow-lg hover:shadow-2xl"
           >
-            <Edit3 className="w-5 h-5" />
-            <span className="font-medium">Compose</span>
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 blur opacity-40 group-hover:opacity-60 transition-opacity" />
+            <span className="relative inline-flex items-center gap-2">
+              <Edit3 className="w-5 h-5" />
+              Compose
+            </span>
           </button>
         )}
       </div>
@@ -198,9 +204,9 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
 
         {superAdminItems.length > 0 && (
           <div className="space-y-1">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase mt-6 mb-2">
+            <div className="inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-white/30 bg-white/60 text-xs font-semibold text-gray-600 mb-2">
               Super Admin
-            </h3>
+            </div>
             {superAdminItems.map((item) => (
               <SidebarItem
                 key={item.label}
@@ -216,12 +222,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
         )}
       </div>
 
-      {/* Footer (Settings + Logout + Profile) */}
-      <div className="p-4 border-t border-gray-200 space-y-2">
+      {/* Footer (Profile + Logout) */}
+      <div className="p-4 border-t border-white/30 bg-white/60 backdrop-blur-sm">
         {role === "USER" && (
           <Link
             to="/u/profile"
-            className="flex items-center gap-3 px-3 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg"
+            className="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 hover:text-gray-900 hover:bg-white/70 transition"
             onClick={() => setSidebarOpen(false)}
           >
             <User className="w-4 h-4" />
@@ -231,7 +237,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
 
         <button
           onClick={() => dispatch(logout())}
-          className="flex items-center cursor-pointer gap-3 w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
+          className="mt-2 w-full flex items-center gap-3 px-3 py-2 rounded-xl text-red-600 hover:bg-red-50 transition"
         >
           <LogOut className="w-4 h-4" />
           <span className="text-sm">Logout</span>
@@ -246,23 +252,35 @@ function SidebarItem({ icon, label, path, active, count, setSidebarOpen }) {
     <Link
       to={path}
       onClick={() => setSidebarOpen(false)}
-      className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors ${
+      className={[
+        "group flex items-center justify-between px-3 py-2.5 rounded-xl transition-all",
         active
-          ? "bg-violet-100 text-violet-700 border border-violet-200"
-          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-      }`}
+          ? "bg-gradient-to-r from-violet-100 to-blue-100 text-violet-800 border border-violet-200 shadow-sm"
+          : "text-gray-700 hover:text-gray-900 hover:bg-white/70 border border-transparent",
+      ].join(" ")}
     >
       <div className="flex items-center gap-3">
-        {icon}
+        <span
+          className={[
+            "p-2 rounded-lg",
+            active
+              ? "bg-gradient-to-r from-violet-500 to-purple-600 text-white"
+              : "bg-gray-100 text-gray-700 group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-purple-500 group-hover:text-white transition-colors",
+          ].join(" ")}
+        >
+          {icon}
+        </span>
         <span className="font-medium">{label}</span>
       </div>
-      {count !== undefined && (
+
+      {typeof count === "number" && (
         <span
-          className={`text-xs px-2 py-1 rounded-full ${
+          className={[
+            "text-xs px-2 py-1 rounded-full",
             active
               ? "bg-violet-200 text-violet-800"
-              : "bg-gray-100 text-gray-600"
-          }`}
+              : "bg-gray-100 text-gray-600",
+          ].join(" ")}
         >
           {count}
         </span>

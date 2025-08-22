@@ -36,7 +36,6 @@ const dashboardSlice = createSlice({
       state.dashboardData = action.payload || initialState.dashboardData;
       state.error = null;
       state.success = action.payload?.message || null;
-      if (state.success) toast.success(state.success);
     },
     dashboardFail: (state, action) => {
       state.loading = false;
@@ -50,7 +49,7 @@ const dashboardSlice = createSlice({
 export const { dashboardRequest, dashboardSuccess, dashboardFail } =
   dashboardSlice.actions;
 
-// Async thunk
+
 export const getAlldashboardData = () => async (dispatch) => {
   try {
     dispatch(dashboardRequest());
@@ -63,6 +62,8 @@ export const getAlldashboardData = () => async (dispatch) => {
   }
 };
 
+
+//////////////// super admin /////////////////////////////
 export const fetchAdmins = () => async (dispatch) => {
   try {
     dispatch(dashboardRequest());
@@ -76,7 +77,6 @@ export const fetchAdmins = () => async (dispatch) => {
   }
 };
 
-
 export const allDataGet = () => async (dispatch) => {
   try {
     dispatch(dashboardRequest());
@@ -89,6 +89,5 @@ export const allDataGet = () => async (dispatch) => {
     return error?.response?.data || { message: errMsg };
   }
 };
-
 
 export default dashboardSlice.reducer;
