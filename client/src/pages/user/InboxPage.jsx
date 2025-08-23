@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import usePageTitle from "../../components/usePageTitle.js";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllReceivedMails, moveToTrash } from "../../redux/slices/mailSlice.js";
+import {
+  getAllReceivedMails,
+  moveToTrash,
+} from "../../redux/slices/mailSlice.js";
 import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import { useLocation } from "react-router-dom";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
+import { Send } from "lucide-react";
 
 export default function InboxPage() {
   usePageTitle("Inbox");
@@ -67,6 +71,7 @@ export default function InboxPage() {
   return (
     <div className="space-y-6">
       <MailHeader
+        icon={Send}
         name="Inbox"
         mails={mails}
         selectedMails={selectedMails}

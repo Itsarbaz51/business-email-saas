@@ -3,11 +3,13 @@ import { Check } from "lucide-react";
 import {
   createRazorpayOrder,
   createOrRenewSubscriptionAction,
+  getMySubscription,
 } from "../redux/slices/subscriptionSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getCurrentUser } from "../redux/slices/authSlice";
 import { toast } from "react-toastify";
+import { processPaidSubscription } from "../components/razorpay";
 
 export const PricingSection = ({
   defaultPlan = "FREE",
@@ -25,7 +27,6 @@ export const PricingSection = ({
 
   const { currentUserData } = useSelector((state) => state.auth);
 
-  // Use the same plan definitions as backend
   const plans = [
     {
       plan: "FREE",
@@ -40,7 +41,7 @@ export const PricingSection = ({
     },
     {
       plan: "BASIC",
-      price: 5, // Match backend price
+      price: 5,
       features: {
         maxMailboxes: 10,
         maxDomains: 3,
@@ -51,7 +52,7 @@ export const PricingSection = ({
     },
     {
       plan: "PREMIUM",
-      price: 15, // Match backend price
+      price: 15,
       features: {
         maxMailboxes: 50,
         maxDomains: 10,
@@ -89,168 +90,58 @@ export const PricingSection = ({
     setSelectedPlan(selected);
 
     if (selected.plan === "FREE" && autoSubscribe && currentUserData) {
-      handleSubscribe(selected);
+      handleSubscribe(selected); // deps inside function
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [defaultPlan, currentUserData]);
 
   const getDisplayPrice = (monthlyPrice) => {
     if (monthlyPrice === 0) return 0;
-
     return billingCycle === "MONTHLY"
       ? Math.round(monthlyPrice * usdToInr)
-      : Math.round(monthlyPrice * 12 * 0.8 * usdToInr); // 20% discount yearly
+      : Math.round(monthlyPrice * 12 * 0.8 * usdToInr);
   };
 
-  // Format price with proper Indian Rupee symbol and formatting
   const formatPrice = (price) => {
     if (price === 0) return "Free";
-
-    // Use Indian Rupee symbol (₹) and Indian number formatting
     return `₹${price.toLocaleString("en-IN")}`;
   };
 
-  const loadRazorpay = () =>
-    new Promise((resolve) => {
-      if (window.Razorpay) return resolve(true);
-
-      const script = document.createElement("script");
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.onload = () => resolve(true);
-      script.onerror = () => {
-        toast.error("Failed to load payment system");
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-
-  // Generate a shorter receipt ID that meets Razorpay's requirements
-  const generateShortReceiptId = (userId, plan) => {
-    // Use a short hash of user ID + plan + timestamp
-    const timestamp = Date.now().toString(36); // Base36 for shorter string
-    const shortUserId = userId ? userId.slice(-8) : "unknown"; // Last 8 chars of user ID
-    const shortPlan = plan.slice(0, 3); // First 3 letters of plan
-
-    return `ord_${shortPlan}_${shortUserId}_${timestamp}`.slice(0, 40);
-  };
-
-  const handleFreeSubscription = async (plan) => {
-    try {
-      const result = await dispatch(
-        createOrRenewSubscriptionAction({
-          plan: plan.plan,
-          billingCycle: billingCycle,
-          paymentStatus: "FREE",
-        })
-      );
-
-      if (result && result.success !== false) {
-        toast.success("Subscribed to Free Plan successfully!");
-      } else {
-        throw new Error(result?.message || "Free subscription failed");
-      }
-    } catch (error) {
-      toast.error(
-        "Free subscription failed: " + (error.message || "Unknown error")
-      );
-      throw error;
-    }
-  };
-
-  const handlePaidSubscription = async (plan) => {
-    const sdkLoaded = await loadRazorpay();
-    if (!sdkLoaded) {
-      return;
-    }
-
-    try {
-      // Create order first - with shorter receipt ID
-      const result = await dispatch(
-        createRazorpayOrder({
-          plan: plan.plan,
-          billingCycle: billingCycle,
-          receiptId: generateShortReceiptId(currentUserData?.id, plan.plan),
-        })
-      );
-
-      console.log("result", result);
-
-      const orderData = result?.data || result;
-
-      if (!orderData?.id) {
-        throw new Error("Order creation failed - no order ID received");
-      }
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "MailFlow",
-        description: `${plan.plan} ${billingCycle} Subscription`,
-        order_id: orderData.id,
-        handler: async function (response) {
-          try {
-            const paymentData = {
-              razorpayOrderId: orderData.id,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature,
-              plan: plan.plan,
-              billingCycle: billingCycle,
-              paymentStatus: "SUCCESS",
-              paymentProvider: "RAZORPAY",
-            };
-
-            await dispatch(createOrRenewSubscriptionAction(paymentData));
-            toast.success("Payment successful! Subscription activated.");
-          } catch (error) {
-            toast.error("Payment verification failed: " + error.message);
-            console.error("Payment error:", error);
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          name: currentUserData.name || "Test User",
-          email: currentUserData.email || "test@example.com",
-          contact: currentUserData.phone?.toString() || "9999999999",
-        },
-
-        theme: { color: "#3399cc" },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false);
-            toast.info("Payment cancelled");
-          },
-        },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (error) {
-      // toast.error("Subscription failed: " + (error.message || "Unknown error"));
-      console.error("Subscription error:", error.message);
-      setIsProcessing(false);
-    }
-  };
-
-  const handleSubscribe = async (plan) => {
+  const handleSubscribe = async (planObj) => {
     if (!currentUserData) {
       navigate("/login");
       return;
     }
 
+    // FREE plan guard (optional)
+    if ((planObj?.price ?? 0) === 0) {
+      toast.info("Free plan selected — no payment needed.");
+      return;
+    }
+
     setIsProcessing(true);
 
-    try {
-      if (plan.price === 0) {
-        await handleFreeSubscription(plan);
-      } else {
-        await handlePaidSubscription(plan);
-      }
-    } catch (error) {
-      // Error is already handled in the respective functions
-    } finally {
-      setIsProcessing(false);
-    }
+    const deps = {
+      dispatch,
+      navigate,
+      toast,
+      setIsProcessing,
+      actions: {
+        createRazorpayOrder,
+        createOrRenewSubscriptionAction,
+        getMySubscription,
+      },
+    };
+
+    await processPaidSubscription(
+      {
+        mode: "NEW",
+        planCode: planObj.plan,
+        billingCycle: planObj.billingCycle || billingCycle,
+        currentUserData,
+      },
+      deps
+    );
   };
 
   const formatStorage = (mb) => {
@@ -259,7 +150,10 @@ export const PricingSection = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8"
+      id="pricing"
+    >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">MailFlow</h1>
@@ -392,7 +286,6 @@ export const PricingSection = ({
           })}
         </div>
 
-        {/* Additional information */}
         <div className="mt-12 text-center text-gray-600">
           <p>
             All plans include 24/7 support and a 14-day money-back guarantee

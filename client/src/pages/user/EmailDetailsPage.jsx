@@ -27,6 +27,7 @@ import {
   removeStarred,
 } from "../../redux/slices/mailSlice";
 import usePageTitle from "../../components/usePageTitle";
+import Loading from "../../components/Loading";
 
 export default function EmailDetailsPage() {
   const [email, setEmail] = useState(null);
@@ -195,7 +196,7 @@ export default function EmailDetailsPage() {
           },
         ],
         subject: detailData.subject,
-        date: detailData.sentAt,
+        date: detailData.sentAt || detailData.receivedAt,
         body: bodyContent,
         attachments:
           attachmentFetch?.map((att) => ({
@@ -215,12 +216,10 @@ export default function EmailDetailsPage() {
   }, [detailData, bodyContent, attachmentFetch]);
 
   if (!email) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
-        Loading email details...
-      </div>
-    );
+    return <Loading />;
   }
+
+  console.log(detailData.starred)
 
   const handleStarred = (mailId, isStarred) => {
     if (!isStarred) {
@@ -235,7 +234,7 @@ export default function EmailDetailsPage() {
   };
   const handleSingleDelete = (mailId) => {
     dispatch(moveToTrash([mailId]));
-    navigate(-1); 
+    navigate(-1);
   };
 
   const handleArchive = (mailId) => {
@@ -243,10 +242,10 @@ export default function EmailDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="">
+    <>
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-300 p-8 rounded-2xl">
           <div className="flex-1">
             <button
               onClick={() => navigate(-1)}
@@ -307,7 +306,7 @@ export default function EmailDetailsPage() {
         </div>
 
         {/* Email Card */}
-        <div className="bg-white -mx-4 rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-violet-200">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:border-violet-200">
           {/* Email Header */}
           <div className="p-4 sm:p-6 border-b border-gray-100">
             <div className="flex items-start gap-3 sm:gap-4">
@@ -552,7 +551,7 @@ export default function EmailDetailsPage() {
       </div>
 
       {/* Mobile Bottom Actions */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm z-50">
         <div className="p-4 pb-6">
           <div className="flex items-center justify-between mb-4">
             <button
@@ -605,6 +604,6 @@ export default function EmailDetailsPage() {
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

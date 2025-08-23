@@ -12,7 +12,11 @@ function Header({
     <div className="mb-12">
       <div className="flex flex-col  lg:flex-row lg:justify-between lg:items-center gap-6">
         {/* Left Section */}
-        <div className={`space-y-4 ${title == "Settings" && 'lg:-ml-78'}`}>
+        <div
+          className={`space-y-4 ${
+            title == "Settings" && " "
+          }`}
+        >
           {subTitle && (
             <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 shadow-lg">
               <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse"></div>

@@ -106,7 +106,7 @@ export const updateDomain = (id, domainData) => async (dispatch) => {
 export const deleteDomain = (domainName) => async (dispatch) => {
     try {
         dispatch(domainRequest());
-        const { data } = await axios.delete(`${baseURL}/domain/delete-domian/${domainName}`);
+        const { data } = await axios.delete(`${baseURL}/domain/delete-domain/${domainName}`);
         dispatch(domainSuccess(data));
         dispatch(fetchDomains());
     } catch (err) {

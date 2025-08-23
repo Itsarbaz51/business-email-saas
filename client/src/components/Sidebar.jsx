@@ -22,93 +22,92 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getCurrentUser, logout } from "../redux/slices/authSlice.js";
 
-const navItems = [
-  {
-    icon: <LayoutDashboard className="w-5 h-5" />,
-    label: "Dashboard",
-    path: "/:role/dashboard",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
-  {
-    icon: <Inbox className="w-5 h-5" />,
-    label: "Inbox",
-    path: "/:role/inbox",
-    count: 12,
-    roles: ["USER"],
-  },
-  {
-    icon: <Mails className="w-5 h-5" />,
-    label: "All Mails",
-    path: "/:role/all-mails",
-    count: 50,
-    roles: ["USER"],
-  },
-  {
-    icon: <Star className="w-5 h-5" />,
-    label: "Starred",
-    path: "/:role/starred",
-    roles: ["USER"],
-  },
-  {
-    icon: <Send className="w-5 h-5" />,
-    label: "Sent",
-    path: "/:role/sent",
-    roles: ["USER"],
-  },
-  {
-    icon: <Archive className="w-5 h-5" />,
-    label: "Archive",
-    path: "/:role/archive",
-    roles: ["USER"],
-  },
-  {
-    icon: <Trash2 className="w-5 h-5" />,
-    label: "Trash",
-    path: "/:role/trash",
-    roles: ["USER"],
-  },
-  {
-    icon: <Globe className="w-5 h-5" />,
-    label: "Domains",
-    path: "/:role/domains",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
-  {
-    icon: <Mailbox className="w-5 h-5" />,
-    label: "Mailboxes",
-    path: "/:role/mailboxes",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
-  {
-    icon: <CreditCard className="w-5 h-5" />,
-    label: "Billing",
-    path: "/:role/billing",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
-  {
-    icon: <Settings className="w-5 h-5" />,
-    label: "Settings",
-    path: "/:role/settings",
-    roles: ["ADMIN", "SUPER_ADMIN"],
-  },
-  {
-    icon: <Shield className="w-5 h-5" />,
-    label: "System Logs",
-    path: "/superadmin/logs",
-    roles: ["SUPER_ADMIN"],
-  },
-  {
-    icon: <Zap className="w-5 h-5" />,
-    label: "Admin Tools",
-    path: "/superadmin/tools",
-    roles: ["SUPER_ADMIN"],
-  },
-];
-
 export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
+  const f = useSelector((state) => state.mail);
 
+  const navItems = [
+    {
+      icon: <LayoutDashboard className="w-5 h-5" />,
+      label: "Dashboard",
+      path: "/:role/dashboard",
+      roles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      icon: <Inbox className="w-5 h-5" />,
+      label: "Inbox",
+      path: "/:role/inbox",
+      // count: currentUser?.received ,
+      roles: ["USER"],
+    },
+    {
+      icon: <Mails className="w-5 h-5" />,
+      label: "All Mails",
+      path: "/:role/all-mails",
+      roles: ["USER"],
+    },
+    {
+      icon: <Star className="w-5 h-5" />,
+      label: "Starred",
+      path: "/:role/starred",
+      roles: ["USER"],
+    },
+    {
+      icon: <Send className="w-5 h-5" />,
+      label: "Sent",
+      path: "/:role/sent",
+      roles: ["USER"],
+    },
+    {
+      icon: <Archive className="w-5 h-5" />,
+      label: "Archive",
+      path: "/:role/archive",
+      roles: ["USER"],
+    },
+    {
+      icon: <Trash2 className="w-5 h-5" />,
+      label: "Trash",
+      path: "/:role/trash",
+      roles: ["USER"],
+    },
+    {
+      icon: <Globe className="w-5 h-5" />,
+      label: "Domains",
+      path: "/:role/domains",
+      roles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      icon: <Mailbox className="w-5 h-5" />,
+      label: "Mailboxes",
+      path: "/:role/mailboxes",
+      roles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      icon: <CreditCard className="w-5 h-5" />,
+      label: "Billing",
+      path: "/:role/billing",
+      roles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      icon: <Settings className="w-5 h-5" />,
+      label: "Settings",
+      path: "/:role/settings",
+      roles: ["ADMIN", "SUPER_ADMIN"],
+    },
+    {
+      icon: <Shield className="w-5 h-5" />,
+      label: "System Logs",
+      path: "/superadmin/logs",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: <Zap className="w-5 h-5" />,
+      label: "Admin Tools",
+      path: "/superadmin/tools",
+      roles: ["SUPER_ADMIN"],
+    },
+  ];
   useEffect(() => {
     if (!currentUser) dispatch(getCurrentUser());
   }, [dispatch, currentUser]);
@@ -149,7 +148,6 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
         "lg:static lg:translate-x-0 lg:flex lg:flex-col",
       ].join(" ")}
     >
-
       {/* Header */}
       <div className="p-5 border-b border-white/30">
         <div className="flex items-center gap-3">

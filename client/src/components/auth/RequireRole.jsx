@@ -2,6 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { getCurrentUser } from "../../redux/slices/authSlice";
+import Loading from "../Loading";
 
 export default function RequireRole({ allowedRoles }) {
   const dispatch = useDispatch();
@@ -13,17 +14,20 @@ export default function RequireRole({ allowedRoles }) {
   }, [dispatch]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // API call hone tak wait kar
+    return (
+      <Loading />
+    );
   }
 
-  if (!isLoading == false && !currentUserData.role == "ADMIN") {
-    // Sirf tabhi redirect karo jab confirm ho jaye user null hai
+  if (
+    (!isLoading == false && !currentUserData.role == "ADMIN") ||
+    !currentUserData?.role === "USER" ||
+    !currentUserData?.role === "SUPER_ADMIN"
+  ) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-
   const normalizedRole = currentUserData?.role?.toUpperCase();
-
   if (!allowedRoles.includes(normalizedRole)) {
     return <Navigate to="/login" replace />;
   }

@@ -6,6 +6,7 @@ import MailHeader from "../../components/user/MailHeader.jsx";
 import { getAllMails, moveToTrash } from "../../redux/slices/mailSlice.js";
 import { useLocation } from "react-router-dom";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
+import { Mail } from "lucide-react";
 
 export default function AllMailsPage() {
   usePageTitle("All Mails");
@@ -72,6 +73,7 @@ export default function AllMailsPage() {
       {/* Mail Header */}
       <MailHeader
         name="All Mails"
+        icon={Mail}
         mails={allMails}
         selectedMails={selectedMails}
         toggleSelectAll={toggleSelectAll}

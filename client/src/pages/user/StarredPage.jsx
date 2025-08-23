@@ -6,6 +6,7 @@ import MailList from "../../components/user/MailList.jsx";
 import MailHeader from "../../components/user/MailHeader.jsx";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
 import { useLocation } from "react-router-dom";
+import { Star } from "lucide-react";
 
 export default function StarredPage() {
   usePageTitle("Starred");
@@ -71,6 +72,7 @@ export default function StarredPage() {
       {/* Header */}
       <MailHeader
         name="Starred Mails"
+        icon={Star}
         mails={allStarredMails}
         selectedMails={selectedMails}
         toggleSelectAll={toggleSelectAll}

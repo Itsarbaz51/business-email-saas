@@ -6,6 +6,7 @@ import MailHeader from "../../components/user/MailHeader.jsx";
 import { getTrash, deleteMails } from "../../redux/slices/mailSlice.js";
 import { useLocation, useNavigate } from "react-router-dom";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
+import { DeleteIcon, Trash2 } from "lucide-react";
 
 export default function TrashPage() {
   usePageTitle("Trash");
@@ -75,6 +76,8 @@ export default function TrashPage() {
       {/* Header */}
       <MailHeader
         name="Trash"
+        icon={Trash2}
+
         mails={trashMails}
         selectedMails={selectedMails}
         toggleSelectAll={toggleSelectAll}

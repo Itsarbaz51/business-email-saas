@@ -1,7 +1,7 @@
-import { Archive } from "lucide-react";
+import { Archive, ArchiveIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import usePageTitle from "../../components/usePageTitle.js";
-import { getAllArchive } from "../../redux/slices/mailSlice.js";
+import { getAllArchive, moveToTrash } from "../../redux/slices/mailSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import MailList from "../../components/user/MailList.jsx";
 import MailToolbar from "../../components/MailToolbar.jsx";
@@ -10,7 +10,6 @@ import { useLocation } from "react-router-dom";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter.js";
 
 export default function ArchivePage() {
-  const [refreshKey, setRefreshKey] = useState(0);
   const [selectedMails, setSelectedMails] = useState(new Set());
 
   const dispatch = useDispatch();
@@ -20,7 +19,7 @@ export default function ArchivePage() {
 
   useEffect(() => {
     dispatch(getAllArchive());
-  }, [dispatch, refreshKey]);
+  }, [dispatch,]);
   const allArchiveMails = useSelector((state) => state.mail?.list || []);
   const loading = useSelector((state) => state.mail?.isLoading);
 
@@ -72,6 +71,7 @@ export default function ArchivePage() {
     <div className="space-y-6">
       {/* Header */}
       <MailHeader
+        icon={ArchiveIcon}
         name="Archive Mails"
         mails={allArchiveMails}
         selectedMails={selectedMails}

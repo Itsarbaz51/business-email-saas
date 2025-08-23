@@ -5,6 +5,7 @@ import MailHeader from "../../components/user/MailHeader";
 import MailList from "../../components/user/MailList";
 import { useLocation } from "react-router-dom";
 import useMailSearchFilter from "../../Hook/useMailSearchFilter";
+import { Send } from "lucide-react";
 
 export default function SentPage() {
   const dispatch = useDispatch();
@@ -71,6 +72,7 @@ export default function SentPage() {
     <div className="space-y-6">
       {/* Header */}
       <MailHeader
+        icon={Send}
         name="Sent Mail"
         mails={sentMails}
         selectedMails={selectedMails}

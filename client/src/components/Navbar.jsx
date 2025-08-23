@@ -1,13 +1,6 @@
-import { useState } from "react";
-import { Search, Bell, User, Menu, Command } from "lucide-react";
+import { Bell, User, Menu } from "lucide-react";
 
 function Navbar({ setSidebarOpen }) {
-  const [showSearch, setShowSearch] = useState(false);
-
-  const handleToggleSearch = () => {
-    setShowSearch((prev) => !prev);
-  };
-
   return (
     <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
       {/* Left Section */}
