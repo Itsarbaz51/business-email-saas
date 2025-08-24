@@ -162,7 +162,7 @@ const Dashboard = () => {
         {/* Animated background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-        <div className="relative z-10">
+        <div className="relative ">
           <div className="flex items-center justify-between mb-4">
             <div
               className={`p-3 rounded-2xl ${colorClasses[color].bg} ${colorClasses[color].border} border group-hover:scale-110 transition-all duration-500 shadow-sm`}
@@ -318,7 +318,7 @@ const Dashboard = () => {
   return (
     <div className="relative">
       {/* Header */}
-      <div className="relative z-10">
+      <div className="relative ">
         <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6 sm:py-8">
             <div className="flex-1 lg:flex-none">
@@ -366,7 +366,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="relative z-10 py-4 space-y-8">
+      <div className="relative  py-4 space-y-8">
         {/* Stats Grid */}
         <div className="sm:grid flex flex-col sm:grid-cols-2  lg:grid-cols-3 sm:space-x-4 space-y-3 lg:gap-x-4 lg:gap-y-4">
           <StatCard

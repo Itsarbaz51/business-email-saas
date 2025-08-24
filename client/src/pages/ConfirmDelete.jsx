@@ -5,7 +5,7 @@ const ConfirmDelete = ({ isOpen, onClose, onConfirm, domainName }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/10 backdrop-blur-xs bg-opacity-40 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/10 backdrop-blur-xs bg-opacity-40 flex items-center justify-center ">
       <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-4">

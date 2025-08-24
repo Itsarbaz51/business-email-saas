@@ -8,7 +8,7 @@ const RendererNavbar = () => {
   const currentLocation = useLocation().pathname;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200/50 z-50">
+    <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200/50">
       {currentLocation === "/login" ? (
         // Login page header
         <div className="px-4 sm:px-6 lg:px-8">
@@ -24,7 +24,7 @@ const RendererNavbar = () => {
                 MailFlow
               </span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm hidden sm:block text-gray-600">
               Don't have an account?{" "}
               <button
                 onClick={() => navigate("/register")}
@@ -34,6 +34,13 @@ const RendererNavbar = () => {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             </div>
+            <button
+              onClick={() => navigate("/register")}
+              className="sm:hidden  text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 inline-flex items-center gap-1 group"
+            >
+              Sign Up
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </button>
           </div>
         </div>
       ) : currentLocation === "/register" ? (
@@ -51,7 +58,7 @@ const RendererNavbar = () => {
                 MailFlow
               </span>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 hidden sm:block">
               Already have an account?{" "}
               <button
                 onClick={() => navigate("/login")}
@@ -61,6 +68,13 @@ const RendererNavbar = () => {
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
               </button>
             </div>
+            <button
+              onClick={() => navigate("/login")}
+              className="sm:hidden text-blue-600 hover:text-blue-700 font-semibold transition-colors duration-200 inline-flex items-center gap-1 group"
+            >
+              Sign In
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+            </button>
           </div>
         </div>
       ) : (

@@ -189,4 +189,20 @@ export const toggleActiveAPI = (id) => async (dispatch) => {
   }
 };
 
+// landig page
+
+export const getAllCountUsers = () => async (dispatch) => {
+  try {
+    dispatch(authRequest());
+    const { data } = await axios.get(`${baseURL}/auth/get-users-count`);
+    dispatch(authSuccess(data))
+    return data
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(authFail(errMsg));
+    return error?.response?.data || { message: errMsg };
+  }
+};
+
+
 export default authSlice.reducer;

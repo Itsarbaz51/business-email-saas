@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Mail,
   Shield,
@@ -12,6 +12,8 @@ import {
   Award,
 } from "lucide-react";
 import { PricingSection } from "../PricingSection";
+import { useDispatch, useSelector } from "react-redux";
+import { getAllCountUsers } from "../../redux/slices/authSlice";
 
 const LandingPage = () => {
   const features = [
@@ -80,10 +82,19 @@ const LandingPage = () => {
     },
   ];
 
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    dispatch(getAllCountUsers())
+  }, [dispatch])
+
+  const { data } = useSelector((state) => state.auth?.user)
+
+
+
   const stats = [
-    { number: "50M+", label: "Emails Delivered" },
+    { number: data, label: "Emails Delivered" },
     { number: "99.9%", label: "Uptime Guarantee" },
-    { number: "150+", label: "Countries Served" },
     { number: "24/7", label: "Expert Support" },
   ];
 
@@ -138,7 +149,7 @@ const LandingPage = () => {
       {/* Stats Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-4xl md:text-5xl font-bold text-blue-600 mb-2">

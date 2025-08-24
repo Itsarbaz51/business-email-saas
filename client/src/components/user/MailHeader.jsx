@@ -89,7 +89,7 @@ export default function MailHeader({
         <div className="flex-1 relative group">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl blur opacity-20 group-focus-within:opacity-40 transition duration-300"></div>
           <div className="relative w-full">
-            <Search className="absolute z-10 left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors duration-200" />
+            <Search className="absolute  left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors duration-200" />
             <input
               type="text"
               placeholder="Search emails, recipients, subjects..."
@@ -119,7 +119,7 @@ export default function MailHeader({
             </button>
 
             {showFilters && (
-              <div className="absolute top-full right-0 mt-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 p-6 min-w-80 z-50">
+              <div className="absolute top-full right-0 mt-3 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/40 p-6 min-w-80 ">
                 <div className="absolute -top-2 right-8 w-4 h-4 bg-white/95 border-l border-t border-white/40 rotate-45"></div>
                 <div className="flex gap-6 w-full">
                   <div className="flex-1">

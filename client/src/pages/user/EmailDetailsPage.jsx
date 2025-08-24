@@ -280,7 +280,7 @@ export default function EmailDetailsPage() {
                 More Actions
               </button>
               {showMoreOptions && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2  animate-in fade-in slide-in-from-top-2 duration-200">
                   {/* <button
                     onClick={() =>
                       window.open(`/u/${folder}/detail/${email.id}`, "_blank", "noopener,noreferrer")
@@ -551,7 +551,7 @@ export default function EmailDetailsPage() {
       </div>
 
       {/* Mobile Bottom Actions */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm z-50">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg backdrop-blur-sm ">
         <div className="p-4 pb-6">
           <div className="flex items-center justify-between mb-4">
             <button

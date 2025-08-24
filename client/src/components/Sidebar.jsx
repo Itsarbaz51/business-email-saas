@@ -21,11 +21,24 @@ import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { getCurrentUser, logout } from "../redux/slices/authSlice.js";
+import { newAllCountReceivedMails } from "../redux/slices/mailSlice.js";
 
 export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
   const dispatch = useDispatch();
   const { user: currentUser } = useSelector((state) => state.auth);
-  const f = useSelector((state) => state.mail);
+
+  useEffect(() => {
+    if (!currentUser) dispatch(getCurrentUser());
+  }, [dispatch, currentUser]);
+
+
+  useEffect(() => {
+    dispatch(newAllCountReceivedMails())
+  }, [dispatch])
+
+  const { newReceivedCount } = useSelector((state) => state.mail)
+
+
 
   const navItems = [
     {
@@ -38,7 +51,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
       icon: <Inbox className="w-5 h-5" />,
       label: "Inbox",
       path: "/:role/inbox",
-      // count: currentUser?.received ,
+      count: newReceivedCount,
       roles: ["USER"],
     },
     {
@@ -108,9 +121,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
       roles: ["SUPER_ADMIN"],
     },
   ];
-  useEffect(() => {
-    if (!currentUser) dispatch(getCurrentUser());
-  }, [dispatch, currentUser]);
+
 
   const role = currentUser?.role?.toUpperCase().replace(" ", "_") || null;
   const location = useLocation();
@@ -141,8 +152,8 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     <aside
       className={[
         // glass + border + shadow (theme)
-        "bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl",
-        "w-72 fixed top-0 left-0 h-screen z-40",
+        "bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl z-10",
+        "w-72 fixed top-0 left-0 h-screen",
         "transform transition-transform duration-300",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
         "lg:static lg:translate-x-0 lg:flex lg:flex-col",
@@ -150,7 +161,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     >
       {/* Header */}
       <div className="p-5 border-b border-white/30">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3" >
           <div className="relative">
             <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 blur opacity-40" />
             <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">

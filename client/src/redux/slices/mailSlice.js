@@ -9,6 +9,7 @@ const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const initialState = {
   list: [],
+  newReceivedCount: 0,
   singleMail: null,
   isLoading: false,
   error: null,
@@ -285,5 +286,31 @@ export const getAllStarred = () => async (dispatch) => {
     dispatch(mailFail(errMsg));
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////// sidebar and nav //////////////////
+export const newAllCountReceivedMails = () => async (dispatch) => {
+  try {
+    dispatch(mailRequest());
+    const { data } = await axios.get(`${baseURL}/mail/new-received-count`);
+    dispatch(mailSuccess(data.data))
+    return data
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(mailFail(errMsg));
+    return error?.response?.data || { message: errMsg };
+  }
+};
+
+
 
 export default mailSlice.reducer;

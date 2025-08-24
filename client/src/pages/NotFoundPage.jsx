@@ -15,7 +15,7 @@ export default function NotFoundPage() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-center px-6 py-24">
+      <div className="relative  flex items-center justify-center px-6 py-24">
         <div className="">
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 p-10 md:p-14 text-center">
             {/* 404 big badge */}

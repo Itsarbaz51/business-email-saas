@@ -208,7 +208,7 @@ function ToolsPage() {
               <div className="relative">
                 <Search
                   size={20}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 z-20"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 "
                 />
                 <input
                   type="text"
@@ -581,9 +581,9 @@ function ToolsPage() {
 
       {/* Modern Modal */}
       {showAdminModal && selectedAdmin && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white rounded-t-2xl border-b border-gray-200 p-6 z-10">
+            <div className="sticky top-0 bg-white rounded-t-2xl border-b border-gray-200 p-6 ">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl">

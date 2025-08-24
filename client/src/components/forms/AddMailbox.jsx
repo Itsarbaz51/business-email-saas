@@ -62,7 +62,7 @@ export const AddMailbox = ({ isOpen, onClose, onSubmit, initialData }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 flex items-center justify-center p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
@@ -75,7 +75,7 @@ export const AddMailbox = ({ isOpen, onClose, onSubmit, initialData }) => {
       </div>
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-lg bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl">
+      <div className="relative  w-full max-w-lg bg-white/80 backdrop-blur-sm rounded-3xl border border-white/20 shadow-2xl">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6">
