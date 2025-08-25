@@ -26,6 +26,8 @@ import TrashPage from "../pages/user/TrashPage.jsx";
 import EmailDetailsPage from "../pages/user/EmailDetailsPage.jsx";
 import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
 import SystemLogsPage from "../pages/superadmin/SystemLogsPage.jsx";
+import AboutPage from "../pages/AboutPage.jsx";
+import ContactPage from "../pages/ContactPage.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,6 +37,8 @@ export const router = createBrowserRouter(
         <Route index={true} element={<HomePage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/contact" element={<ContactPage />} />
       </Route>
 
       {/* protected routes */}

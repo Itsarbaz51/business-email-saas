@@ -21,7 +21,7 @@ function Navbar({ setSidebarOpen }) {
           <User className="w-4 h-4 text-white" />
         </div>
 
-        {toggleView && (
+        {/* {toggleView && (
           <div className="absolute top-10 right-0 w-64 bg-white rounded-xl shadow-lg border p-4 z-50">
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-sm font-semibold">Accounts</h3>
@@ -33,13 +33,11 @@ function Navbar({ setSidebarOpen }) {
               </button>
             </div>
 
-            {/* Current User */}
             <div className="p-2 bg-violet-100 rounded-lg mb-2">
               <p className="font-medium text-sm">{currentUser?.email}</p>
               <span className="text-xs text-gray-500">Current</span>
             </div>
 
-            {/* Other Accounts */}
             <div className="space-y-2">
               {accounts?.filter((acc) => acc.id !== currentUser?.id)
                 .map((acc) => (
@@ -64,8 +62,6 @@ function Navbar({ setSidebarOpen }) {
                   </div>
                 ))}
             </div>
-
-            {/* Add Account Button */}
             <button
               onClick={() => navigate("/login", { state: { fromAddAccount: true } })}
               className="mt-3 w-full py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 text-sm"
@@ -73,7 +69,7 @@ function Navbar({ setSidebarOpen }) {
               Add Account
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

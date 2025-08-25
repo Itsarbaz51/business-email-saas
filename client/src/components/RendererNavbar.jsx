@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Menu, X, ArrowRight } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const RendererNavbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -96,6 +96,12 @@ const RendererNavbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-1">
+              <Link
+                to="/"
+                className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
+              >
+                Home
+              </Link>
               <a
                 href="#features"
                 className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
@@ -108,18 +114,18 @@ const RendererNavbar = () => {
               >
                 Pricing
               </a>
-              <a
-                href="#about"
+              <Link
+                to="/about"
                 className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 About
-              </a>
-              <a
-                href="#contact"
+              </Link>
+              <Link
+                to="/contact"
                 className="px-4 py-2 text-gray-700 hover:text-blue-600 font-medium transition-all duration-200 rounded-lg hover:bg-blue-50"
               >
                 Contact
-              </a>
+              </Link>
             </div>
 
             {/* Desktop CTA */}

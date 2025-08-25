@@ -10,12 +10,17 @@ import {
   Globe,
   Clock,
   Award,
+  Plus,
+  X,
 } from "lucide-react";
 import { PricingSection } from "../PricingSection";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCountUsers } from "../../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
+import TestimonialForm from "../../components/forms/TestimonialForm";
 
 const LandingPage = () => {
+  const [isShowTestimonial, setIsShowTestimonial] = React.useState(false);
   const features = [
     {
       icon: <Shield className="w-8 h-8 text-blue-600" />,
@@ -82,21 +87,21 @@ const LandingPage = () => {
     },
   ];
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllCountUsers())
-  }, [dispatch])
+    dispatch(getAllCountUsers());
+  }, [dispatch]);
 
-  const { data } = useSelector((state) => state.auth?.user)
-
-
+  const deliveredCount = useSelector((state) => state.auth?.user?.data) ?? 0;
 
   const stats = [
-    { number: data, label: "Emails Delivered" },
+    { number: deliveredCount, label: "Emails Delivered" },
     { number: "99.9%", label: "Uptime Guarantee" },
     { number: "24/7", label: "Expert Support" },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <div className="pt-16">
@@ -120,7 +125,10 @@ const LandingPage = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <button className="group bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 flex items-center shadow-lg">
+            <button
+              onClick={() => navigate("/login")}
+              className="group bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 flex items-center shadow-lg"
+            >
               Start Free Trial
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -212,36 +220,58 @@ const LandingPage = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition-shadow duration-300"
-              >
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 text-yellow-500 fill-current"
-                    />
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-6 italic leading-relaxed">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center">
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">
-                      {testimonial.name}
-                    </p>
-                    <p className="text-gray-600">{testimonial.role}</p>
-                  </div>
-                </div>
+          <div>
+            <div
+              className="group w-fit relative cursor-pointer"
+              onClick={() => setIsShowTestimonial(true)}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => {
+                if (e.key === "Enter") setIsShowTestimonial(true);
+              }}
+            >
+              <Plus className="w-8 h-8 text-blue-600 mb-4 hover:text-blue-800" />
+              <span className="hidden group-hover:block absolute bg-white text-sm px-2 py-1 rounded shadow">
+                Add Testimonial
+              </span>
+            </div>
+            {isShowTestimonial && (
+              <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+                {/* Form content */}
+                <TestimonialForm onClose={() => setIsShowTestimonial(false)} />
               </div>
-            ))}
+            )}
+            <div className="grid md:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition-shadow duration-300"
+                >
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="w-5 h-5 text-yellow-500 fill-current"
+                      />
+                    ))}
+                  </div>
+                  <p className="text-gray-700 mb-6 italic leading-relaxed">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="flex items-center">
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-gray-600">{testimonial.role}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

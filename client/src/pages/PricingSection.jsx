@@ -29,7 +29,7 @@ export const PricingSection = ({
 
   const plans = [
     {
-      plan: "FREE",
+      plan: "FREE (8 Days Trial)",
       price: 0,
       features: {
         maxMailboxes: 1,
