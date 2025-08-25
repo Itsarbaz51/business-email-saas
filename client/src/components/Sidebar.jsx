@@ -16,6 +16,7 @@ import {
   Shield,
   User,
   LogOut,
+  MailboxIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,17 +29,18 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
   const { user: currentUser } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (!currentUser) dispatch(getCurrentUser());
+    if (!currentUser) {
+      dispatch(getCurrentUser());
+    }
   }, [dispatch, currentUser]);
 
-
   useEffect(() => {
-    dispatch(newAllCountReceivedMails())
-  }, [dispatch])
+    if (currentUser.role === "USER") {
+      dispatch(newAllCountReceivedMails());
+    }
+  }, [dispatch, currentUser]);
 
-  const { newReceivedCount } = useSelector((state) => state.mail)
-
-
+  const { newReceivedCount } = useSelector((state) => state.mail);
 
   const navItems = [
     {
@@ -111,17 +113,28 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     {
       icon: <Shield className="w-5 h-5" />,
       label: "System Logs",
-      path: "/superadmin/logs",
+      path: "/:role/logs",
       roles: ["SUPER_ADMIN"],
     },
     {
       icon: <Zap className="w-5 h-5" />,
       label: "Admin Tools",
-      path: "/superadmin/tools",
+      path: "/:role/tools",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: <Star className="w-5 h-5" />,
+      label: "Testimonials",
+      path: "/:role/testimonials",
+      roles: ["SUPER_ADMIN"],
+    },
+    {
+      icon: <MailboxIcon className="w-5 h-5" />,
+      label: "Contact",
+      path: "/:role/contact",
       roles: ["SUPER_ADMIN"],
     },
   ];
-
 
   const role = currentUser?.role?.toUpperCase().replace(" ", "_") || null;
   const location = useLocation();
@@ -161,15 +174,21 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
     >
       {/* Header */}
       <div className="p-5 border-b border-white/30">
-        <div className="flex items-center gap-3" >
+        <div className="flex items-center gap-3 ">
           <div className="relative">
-            <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 blur opacity-40" />
-            <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
+            {/* <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 blur opacity-40" />
+            <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center"> */}
+            {/* <Zap className="w-5 h-5 text-white" /> */}
+            <img
+              src="https://sdmntpraustraliaeast.oaiusercontent.com/files/00000000-c0d4-61fa-99d7-d202df47bb65/raw?se=2025-08-25T13%3A08%3A36Z&sp=r&sv=2024-08-04&sr=b&scid=7cd937fa-5d9b-507b-8625-0f2c8f4ecd8c&skoid=f8b66c09-1aa0-4801-9884-173c5cef2b8c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-08-24T23%3A56%3A52Z&ske=2025-08-25T23%3A56%3A52Z&sks=b&skv=2024-08-04&sig=W8AVh9nLDxy3fHmO36sQmCKrLMS47PPGuh0QV1s9CU4%3D"
+              alt=""
+              srcset=""
+              className="w-8 h-8"
+            />
+            {/* </div> */}
           </div>
           <h2 className="text-lg font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-            MailFlow
+            Airmails
           </h2>
 
           <button
@@ -232,7 +251,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, onCompose }) {
       </div>
 
       {/* Footer (Profile + Logout) */}
-      <div className="p-4 border-t border-white/30 bg-white/60 backdrop-blur-sm">
+      <div className="p-4 border-t border-white/30  backdrop-blur-sm">
         {role === "USER" && (
           <Link
             to="/u/profile"

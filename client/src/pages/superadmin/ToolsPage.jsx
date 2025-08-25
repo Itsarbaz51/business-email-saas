@@ -45,7 +45,6 @@ function ToolsPage() {
   );
 
   const adminsArray = Array.isArray(adminsData.admins) ? adminsData.admins : [];
-  console.log(adminsArray);
 
   const formatDate = (dateString) => {
     if (!dateString) return "—";

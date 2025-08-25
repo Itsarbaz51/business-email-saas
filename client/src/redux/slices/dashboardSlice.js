@@ -60,7 +60,7 @@ export const getAlldashboardData = () => async (dispatch) => {
     const errMsg = err?.response?.data?.message || err?.message;
     dispatch(dashboardFail(errMsg));
   }
-};
+};  
 
 
 //////////////// super admin /////////////////////////////

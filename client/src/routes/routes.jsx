@@ -28,6 +28,9 @@ import ToolsPage from "../pages/superadmin/ToolsPage.jsx";
 import SystemLogsPage from "../pages/superadmin/SystemLogsPage.jsx";
 import AboutPage from "../pages/AboutPage.jsx";
 import ContactPage from "../pages/ContactPage.jsx";
+import VerifySignup from "../pages/VerifySignup.jsx";
+import TestimonialsPage from "../pages/superadmin/TestimonialsPage.jsx";
+import Contact from "../pages/superadmin/Contact.jsx";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -40,6 +43,7 @@ export const router = createBrowserRouter(
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
       </Route>
+      <Route path="/signup-verify" element={<VerifySignup />} />
 
       {/* protected routes */}
       <Route element={<RequireRole allowedRoles={["USER"]} />}>
@@ -79,6 +83,8 @@ export const router = createBrowserRouter(
           <Route path="billing" element={<BillingPage />} />
           <Route path="logs" element={<SystemLogsPage />} />
           <Route path="tools" element={<ToolsPage />} />
+          <Route path="testimonials" element={<TestimonialsPage />} />
+          <Route path="contact" element={<Contact />} />
         </Route>
       </Route>
 

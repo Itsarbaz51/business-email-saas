@@ -204,7 +204,7 @@ const AdminTable = () => {
   };
 
   return (
-    <div>
+    <div className="h-screen">
       {/* Header */}
       <div className="bg-white/40 rounded-xl shadow-sm border border-gray-200 mb-8">
         <div className="px-8 py-6 border-b border-gray-200">

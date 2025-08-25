@@ -33,6 +33,14 @@ export default function DashboardLayout() {
         onCompose={() => openCompose("new")}
       />
 
+      {/* Backdrop for mobile sidebar */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-[9] lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
@@ -47,9 +55,7 @@ export default function DashboardLayout() {
 
           <div className="overflow-y-auto p-6 sm:p-8">
             {/* Loading overlay (glass chip) */}
-            {loading && (
-              <Loading />
-            )}
+            {loading && <Loading />}
 
             <Outlet context={{ openCompose }} />
             {/* Footer (always bottom of main) */}
@@ -57,7 +63,6 @@ export default function DashboardLayout() {
               <Footer />
             </div>
           </div>
-
         </main>
 
         {/* Compose modal */}

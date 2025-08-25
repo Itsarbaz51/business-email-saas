@@ -5,6 +5,7 @@ import ButtonField from "../components/ui/ButtonField";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { register } from "../redux/slices/authSlice";
+import { toast } from "react-toastify";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -20,7 +21,6 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
-  const redirectToLogin = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -78,15 +78,19 @@ export default function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
     try {
-      await dispatch(register(formData));
+      const result = await dispatch(register(formData));
+      if (result.status === 200) {
+        toast.success("Check your email to verify your account.");
+      }
     } finally {
       setLoading(false);
-      redirectToLogin("/login");
+      navigate("/");
     }
   };
 

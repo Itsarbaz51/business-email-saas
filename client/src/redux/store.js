@@ -5,6 +5,7 @@ import domainReducer from "./slices/domainSlice.js";
 import mailboxReducer from "./slices/mailboxSlice.js";
 import mailReducer from "./slices/mailSlice.js";
 import dashboardReducer from "./slices/dashboardSlice.js";
+import homeReducer from "./slices/homeSlice.js";
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     mailbox: mailboxReducer,
     mail: mailReducer,
     dashboard: dashboardReducer,
+    home: homeReducer,
   },
 });
 

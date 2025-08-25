@@ -20,8 +20,8 @@ export default function TestimonialForm({ onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
     dispatch(submitTestimonial(formData));
+    onClose();
   };
 
   return (

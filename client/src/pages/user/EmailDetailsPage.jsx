@@ -211,15 +211,12 @@ export default function EmailDetailsPage() {
         isArchive: detailData.archive,
         size: sumAttachmentSizes(detailData.attachments),
       });
-      console.log(detailData);
     }
   }, [detailData, bodyContent, attachmentFetch]);
 
   if (!email) {
     return <Loading />;
   }
-
-  console.log(detailData.starred)
 
   const handleStarred = (mailId, isStarred) => {
     if (!isStarred) {

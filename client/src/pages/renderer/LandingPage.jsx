@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getAllCountUsers } from "../../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import TestimonialForm from "../../components/forms/TestimonialForm";
+import { allTestimonials } from "../../redux/slices/homeSlice";
 
 const LandingPage = () => {
   const [isShowTestimonial, setIsShowTestimonial] = React.useState(false);
@@ -60,34 +61,21 @@ const LandingPage = () => {
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "CEO, TechStart Inc.",
-      content:
-        "MailFlow has completely transformed our business communications. The security features give us peace of mind.",
-      rating: 5,
-      avatar: "SJ",
-    },
-    {
-      name: "Michael Chen",
-      role: "Marketing Director",
-      content:
-        "Our email campaigns are now 300% more effective thanks to MailFlow's advanced analytics and automation.",
-      rating: 5,
-      avatar: "MC",
-    },
-    {
-      name: "Emily Davis",
-      role: "Freelance Designer",
-      content:
-        "Simple, elegant, and powerful. Everything I need without the complexity of other email services.",
-      rating: 5,
-      avatar: "ED",
-    },
-  ];
-
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(allTestimonials());
+  }, [dispatch]);
+
+  const { data: testimonials } = useSelector((state) => state.home) || [];
+
+  const transformedTestimonials = testimonials?.map((t) => ({
+    rating: t.rating,
+    content: t.review,
+    name: t.name,
+    role: t.designation,
+    avatar: t.name?.charAt(0)?.toUpperCase(),
+  }));
 
   useEffect(() => {
     dispatch(getAllCountUsers());
@@ -179,7 +167,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-              Why Choose MailFlow?
+              Why Choose Airmails?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Built for the modern world with features that adapt to your
@@ -216,7 +204,7 @@ const LandingPage = () => {
               Trusted by Thousands
             </h2>
             <p className="text-xl text-gray-600">
-              See what our customers say about their MailFlow experience
+              See what our customers say about their Airmails experience
             </p>
           </div>
 
@@ -241,8 +229,8 @@ const LandingPage = () => {
                 <TestimonialForm onClose={() => setIsShowTestimonial(false)} />
               </div>
             )}
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {transformedTestimonials?.map((testimonial, index) => (
                 <div
                   key={index}
                   className="bg-gray-50 p-8 rounded-2xl hover:shadow-lg transition-shadow duration-300"
@@ -256,7 +244,7 @@ const LandingPage = () => {
                     ))}
                   </div>
                   <p className="text-gray-700 mb-6 italic leading-relaxed">
-                    "{testimonial.content}"
+                    {testimonial.content}
                   </p>
                   <div className="flex items-center">
                     <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
@@ -284,7 +272,7 @@ const LandingPage = () => {
           </h2>
           <p className="text-xl text-gray-700 mb-8 leading-relaxed">
             Join thousands of satisfied customers who've made the switch to
-            MailFlow. Start your free trial today.
+            Airmails. Start your free trial today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button className="bg-blue-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 inline-flex items-center justify-center">

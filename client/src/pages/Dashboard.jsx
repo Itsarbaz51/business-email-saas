@@ -24,27 +24,27 @@ const Dashboard = () => {
 
   const [dashboardData, setDashboardData] = useState(null);
   const dispatch = useDispatch();
+  const fechedDashboardData = useSelector(
+    (state) => state.dashboard.dashboardData || []
+  );
 
   useEffect(() => {
-    dispatch(getAlldashboardData());
-  }, [dispatch]);
-
-  const fechedDashboardData = useSelector(
-    (state) => state.dashboard?.dashboardData
-  );
-  console.log(fechedDashboardData);
+    if (!fechedDashboardData) {
+      dispatch(getAlldashboardData());
+    }
+  }, [dispatch, fechedDashboardData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDashboardData({
-        totalDomains: fechedDashboardData.totalDomains || 0,
-        totalMailboxes: fechedDashboardData.totalMailboxes || 0,
-        totalReceivedEmails: fechedDashboardData.totalReceivedEmails || 0,
-        totalSentEmails: fechedDashboardData.totalSentEmails || 0,
-        storageUsed: fechedDashboardData.storageUsed || 0,
-        recentDomains: fechedDashboardData.recentDomains || [],
-        recentSentEmails: fechedDashboardData.recentSentEmails || [],
-        recentReceivedEmails: fechedDashboardData.recentReceivedEmails || [],
+        totalDomains: fechedDashboardData.totalDomains,
+        totalMailboxes: fechedDashboardData.totalMailboxes,
+        totalReceivedEmails: fechedDashboardData.totalReceivedEmails,
+        totalSentEmails: fechedDashboardData.totalSentEmails,
+        storageUsed: fechedDashboardData.storageUsed,
+        recentDomains: fechedDashboardData.recentDomains,
+        recentSentEmails: fechedDashboardData.recentSentEmails,
+        recentReceivedEmails: fechedDashboardData.recentReceivedEmails,
       });
       setLoading(false);
     }, 2000);

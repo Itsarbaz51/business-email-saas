@@ -7,6 +7,7 @@ axios.defaults.withCredentials = true;
 const baseURL = import.meta.env.VITE_API_BASE_URL;
 
 const initialState = {
+  data: null,
   isLoading: false,
   error: null,
   success: null,
@@ -26,6 +27,11 @@ const contactTestimonialSlice = createSlice({
       state.success = action.payload?.message;
       state.error = null;
     },
+    dataSuccess: (state, action) => {
+      state.isLoading = false;
+      state.data = action.payload?.data;
+      state.error = null;
+    },
     requestFail: (state, action) => {
       state.isLoading = false;
       state.error = action.payload;
@@ -36,7 +42,7 @@ const contactTestimonialSlice = createSlice({
   },
 });
 
-export const { requestStart, requestSuccess, requestFail } =
+export const { requestStart, requestSuccess, requestFail, dataSuccess } =
   contactTestimonialSlice.actions;
 
 export const submitContact = (contactData) => async (dispatch) => {
@@ -65,6 +71,31 @@ export const submitTestimonial = (testimonialData) => async (dispatch) => {
     );
     dispatch(requestSuccess(data));
     toast.success(data.message);
+    return data;
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(requestFail(errMsg));
+    return { message: errMsg };
+  }
+};
+
+export const allTestimonials = () => async (dispatch) => {
+  try {
+    dispatch(requestStart());
+    const { data } = await axios.get(`${baseURL}/home/all-testimonials`);
+    dispatch(dataSuccess(data));
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(requestFail(errMsg));
+    return { message: errMsg };
+  }
+};
+
+export const allContacts = () => async (dispatch) => {
+  try {
+    dispatch(requestStart());
+    const { data } = await axios.get(`${baseURL}/home/all-contacts`);
+    dispatch(dataSuccess(data));
     return data;
   } catch (error) {
     const errMsg = error?.response?.data?.message || error?.message;

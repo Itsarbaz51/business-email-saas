@@ -95,6 +95,22 @@ export const register = (userData) => async (dispatch) => {
   }
 };
 
+export const verifysignup = (token) => async (dispatch) => {
+  try {
+    dispatch(authRequest());
+    const { data } = await axios.post(
+      `${baseURL}/auth/signup-verify?token=${token}`
+    );
+    dispatch(authSuccess(data));
+    toast.success(data.message);
+    return data;
+  } catch (error) {
+    const errMsg = error?.response?.data?.message || error?.message;
+    dispatch(authFail(errMsg));
+    return error?.response?.data || { message: errMsg };
+  }
+};
+
 export const login = (credentials) => async (dispatch) => {
   try {
     dispatch(authRequest());
@@ -174,8 +190,6 @@ export const changePassword = (passwordData) => async (dispatch) => {
 // ====================== super admin =====================
 
 export const toggleActiveAPI = (id) => async (dispatch) => {
-  console.log(id);
-
   try {
     dispatch(authRequest());
     const { data } = await axios.patch(`${baseURL}/auth/admin-toggle/${id}`);
@@ -195,14 +209,13 @@ export const getAllCountUsers = () => async (dispatch) => {
   try {
     dispatch(authRequest());
     const { data } = await axios.get(`${baseURL}/auth/get-users-count`);
-    dispatch(authSuccess(data))
-    return data
+    dispatch(authSuccess(data));
+    return data;
   } catch (error) {
     const errMsg = error?.response?.data?.message || error?.message;
     dispatch(authFail(errMsg));
     return error?.response?.data || { message: errMsg };
   }
 };
-
 
 export default authSlice.reducer;

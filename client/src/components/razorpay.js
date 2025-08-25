@@ -28,15 +28,8 @@ export const processPaidSubscription = async (
   },
   deps
 ) => {
-  const {
-    dispatch,
-    actions, // { createRazorpayOrder, createOrRenewSubscriptionAction, getMySubscription }
-    toast,
-    setIsProcessing, // optional
-    navigate, // optional
-  } = deps || {};
+  const { dispatch, actions, toast, setIsProcessing, navigate } = deps || {};
 
-  // safety: deps na mile to soft-fail
   if (!dispatch || !actions) {
     console.error("processPaidSubscription: missing deps/dispatch/actions");
     toast?.error?.("Payment setup issue. Please refresh.");
@@ -79,7 +72,7 @@ export const processPaidSubscription = async (
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: orderData.amount, // paise
       currency: orderData.currency, // "INR"
-      name: "MailFlow",
+      name: "Airmails",
       description: `${plan} ${cycle} ${
         mode === "RENEW" ? "– Renew" : "Subscription"
       }`,

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { submitContact } from "../redux/slices/homeSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -20,14 +20,16 @@ export default function ContactPage() {
 
   const dispatch = useDispatch();
 
+  let res = useSelector((state) => state.home);
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "", msg: "" });
     setLoading(true);
     try {
-      // TODO: replace with your API endpoint
-      const res = dispatch(submitContact(form));
-      if (!res.ok) throw new Error("Failed");
+      dispatch(submitContact(form));
+
+      if (!res.success) throw new Error("Failed");
       setStatus({
         type: "success",
         msg: "Thanks! We’ll get back to you soon.",
@@ -42,7 +44,7 @@ export default function ContactPage() {
     } catch (err) {
       setStatus({
         type: "error",
-        msg: "Kuch galat ho gaya. Please try again.",
+        msg: "Please try again.",
       });
     } finally {
       setLoading(false);
@@ -80,7 +82,7 @@ export default function ContactPage() {
             value={form.name}
             onChange={onChange}
             className="w-full rounded-lg border border-gray-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Jane Doe"
+            placeholder="your name"
           />
         </div>
 
@@ -104,7 +106,7 @@ export default function ContactPage() {
             value={form.phone}
             onChange={onChange}
             className="w-full rounded-lg border border-gray-200 bg-white p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="+91 9xxxxxxxxx"
+            placeholder="+91 xxxxxxxxx"
           />
         </div>
 

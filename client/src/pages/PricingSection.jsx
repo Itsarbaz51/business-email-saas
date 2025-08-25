@@ -64,7 +64,7 @@ export const PricingSection = ({
   ];
 
   useEffect(() => {
-    if (location !== "/") dispatch(getCurrentUser());
+    dispatch(getCurrentUser());
   }, [dispatch, location]);
 
   useEffect(() => {
@@ -108,7 +108,7 @@ export const PricingSection = ({
   };
 
   const handleSubscribe = async (planObj) => {
-    if (!currentUserData) {
+    if (!currentUserData.success == false) {
       navigate("/login");
       return;
     }
@@ -156,7 +156,7 @@ export const PricingSection = ({
     >
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">MailFlow</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Airmails</h1>
           <p className="text-xl text-gray-600">
             Choose the perfect plan for your email management needs
           </p>

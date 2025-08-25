@@ -34,11 +34,10 @@ const SentEmailForm = ({
         try {
           // Step 1: get signed URL from backend
           const res = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/mail/body/${initialData.isSent ? "SENT" : "RECEIVED"
+            `${import.meta.env.VITE_API_BASE_URL}/mail/body/${
+              initialData.isSent ? "SENT" : "RECEIVED"
             }/${initialData.id}`
           );
-
-          console.log(res);
 
           if (res.data?.data?.bodyUrl) {
             const htmlRes = await fetch(res.data.data.bodyUrl);
@@ -52,8 +51,9 @@ const SentEmailForm = ({
 
       // reply / forward formatting
       if (mode === "reply") {
-        bodyContent = `<br/><br/>On ${initialData.receivedAt || ""}, ${initialData.fromEmail || ""
-          } wrote:<br/>${bodyContent}`;
+        bodyContent = `<br/><br/>On ${initialData.receivedAt || ""}, ${
+          initialData.fromEmail || ""
+        } wrote:<br/>${bodyContent}`;
       } else if (mode === "forward") {
         bodyContent = `<br/><br/>---------- Forwarded message ----------<br/>
                    From: ${initialData.fromEmail || ""}<br/>
@@ -69,8 +69,8 @@ const SentEmailForm = ({
           mode === "forward"
             ? `Fwd: ${initialData.subject || ""}`
             : mode === "reply"
-              ? `Re: ${initialData.subject || ""}`
-              : initialData.subject || "",
+            ? `Re: ${initialData.subject || ""}`
+            : initialData.subject || "",
         body: bodyContent,
       });
     };
@@ -182,7 +182,11 @@ const SentEmailForm = ({
       {/* Mobile: full screen */}
       <div className="fixed inset-0 flex sm:hidden z-50">
         <div className="bg-white border border-gray-300 rounded-none shadow-2xl flex flex-col w-full h-full">
-          <Header mode={mode} onClose={onClose} setIsMinimized={setIsMinimized} />
+          <Header
+            mode={mode}
+            onClose={onClose}
+            setIsMinimized={setIsMinimized}
+          />
 
           <EmailForm
             formData={formData}
@@ -211,7 +215,11 @@ const SentEmailForm = ({
           dragHandleClassName="drag-handle"
         >
           <div className="bg-white border border-gray-300 rounded-lg shadow-2xl flex flex-col h-full">
-            <Header mode={mode} onClose={onClose} setIsMinimized={setIsMinimized} />
+            <Header
+              mode={mode}
+              onClose={onClose}
+              setIsMinimized={setIsMinimized}
+            />
 
             <EmailForm
               formData={formData}
@@ -233,7 +241,11 @@ const SentEmailForm = ({
 const Header = ({ mode, onClose, setIsMinimized }) => (
   <div className="drag-handle flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 rounded-t-lg cursor-move">
     <h3 className="text-lg font-semibold text-gray-800">
-      {mode === "reply" ? "Reply" : mode === "forward" ? "Forward" : "New Message"}
+      {mode === "reply"
+        ? "Reply"
+        : mode === "forward"
+        ? "Forward"
+        : "New Message"}
     </h3>
     <div className="flex gap-2">
       <button
@@ -262,7 +274,10 @@ const EmailForm = ({
   attachments,
   handleSubmit,
 }) => (
-  <form onSubmit={handleSubmit} className="p-4 flex-1 flex flex-col overflow-hidden">
+  <form
+    onSubmit={handleSubmit}
+    className="p-4 flex-1 flex flex-col overflow-hidden"
+  >
     {/* From */}
     <div className="mb-3 flex items-center">
       <label className="text-sm font-medium text-gray-700 w-12">From</label>
@@ -355,7 +370,12 @@ const EmailForm = ({
 
         <label className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 cursor-pointer">
           <Paperclip size={16} className="mr-2" /> Attach
-          <input type="file" multiple onChange={handleFileAttachment} className="hidden" />
+          <input
+            type="file"
+            multiple
+            onChange={handleFileAttachment}
+            className="hidden"
+          />
         </label>
       </div>
     </div>
